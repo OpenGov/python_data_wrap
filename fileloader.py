@@ -16,6 +16,11 @@ tokens represents a single line.
 
 Return Format:
     list[ ('line as string' or 'list[ tokens ]') ]
+    
+@param filename The filename being requested for loading
+@param filedir The directory of the file (optional)
+@param delimiter The delimiter to split lines (default ',' for csv)
+@author Matt Seal
 '''
 class FileDataLoader(object):
     def __init__(self, filename, filedir='', delimiter=None):

@@ -3,6 +3,12 @@ from initSubdir import checkSubdirPath; checkSubdirPath(__name__)
 import listwrap
 import unittest
 
+'''
+Performs an exhaustive test suite on the ListWrap
+class.
+
+@author Matt Seal
+'''
 class ListWrapTest(unittest.TestCase):
     def testNonStrLen(self):
         testItem = []
@@ -63,7 +69,6 @@ class ListWrapTest(unittest.TestCase):
         self.assertEqual(listwrap.getRestrictedIndex(0, 0, False), 0)
         self.assertEqual(listwrap.getRestrictedIndex(10, 0, False), 0)
         self.assertEqual(listwrap.getRestrictedIndex(-1, 0, False), 0)
-        
         
     def testGetPosSlice(self):
         dataLen = 10

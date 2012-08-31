@@ -5,8 +5,17 @@ Defines a object which can save attributes to a file and
 load those attributes upon initialization. This allows
 for easy persistent storing of object characteristics.
 
-If attrObj is not defined then self is used as the 
-attribute holder (inheritance is assumed).
+@param filename The filename used to store the attributes
+                without an extension.
+@param attributes An iterable of all the attributes from
+                  attrObj to be saved.
+@param dbext The extension on the filename to be used
+             (default filedbwrap.getDefaultFileExt()).
+@param attrObj The object whose attributes are being saved
+               (default self -- inheritance assumed).
+@param readOnly Determines if settings are saved on 
+                deconstruction / saveAttributes().
+@author Matt Seal
 '''
 class AttributeSavable(object):
     def __init__(self, filename, attributes, dbext=None, attrObj=None, readOnly=False):

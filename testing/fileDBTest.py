@@ -8,12 +8,22 @@ import os
 NOTE this testing library needs more tests for changing
 wrapper attributes -- for now it's stable but future
 changes could disrupt these.
+
+@author Joe Maguire
+@editor Matt Seal
 '''
 
+'''
+Used to track work on a non primitive with no methods
+defined.
+'''
 class FakeObj():
     def __init__(self,value):
         self.value = int(value)
         
+'''
+Gets the first alpha character in a string
+'''
 def firstAlphaChar(word):
     for c in word: 
         if c.isalpha():
@@ -21,10 +31,18 @@ def firstAlphaChar(word):
     # Default to z if necessary
     return "z"
 
+'''
+The lower case alphabet
+'''
 def getBaseAlphabet():
     return "abcdefghijklmnopqrstuvwxyz"
 
-##handles three self.testDicts 
+'''
+Base class used to define DBWrap tests.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 class DBWrapTest(object):
     def setUp(self):
         self.dirname = 'fileDB'
@@ -55,7 +73,7 @@ class DBWrapTest(object):
         self.assertTrue(keyerror)
     
     def testContains(self):
-        ## 'Do we contain all the values we entered?'       
+        # Do we contain all the values we entered?    
         result = 0;
         for i in range(20):
             if str(i) in self.testDict:
@@ -64,7 +82,7 @@ class DBWrapTest(object):
         self.testDict.syncWrites()
     
     def testCheckValues(self):
-        ## 'Check the values?'
+        # Check the values?
         result = 0
         for i in range(20):
             if self.testDict[str(i)] == i:
@@ -74,8 +92,8 @@ class DBWrapTest(object):
     
     def testReadWrite(self):
         result = 0
-        ## 'Altering values'
-        ##double even values
+        # Altering values
+        # Double even values
         for i in range(20):
             if i%2 == 0:
                 self.testDict[str(i)] += self.testDict[str(i)]
@@ -86,10 +104,10 @@ class DBWrapTest(object):
             else:
                 if self.testDict[str(i)] == i:
                     result += 1
-        ## 'Checking new values'
+        # Checking new values
         self.assertEqual(result,self.size)
-        ## 'Restoring values'
-        ##undo
+        # Restoring values
+        # Undo
         for i in range(20):
             if i%2 == 0:
                 self.testDict[str(i)] -= i
@@ -113,7 +131,7 @@ class DBWrapTest(object):
         self.testDict.syncWrites()
     
     def testObjNamed(self): 
-        ## 'Key is not a string, value is a test FakeObject'
+        # Key is not a string, value is a test FakeObject
         w = FakeObj(1)
         y = FakeObj(2)
         z = FakeObj(3)
@@ -126,20 +144,20 @@ class DBWrapTest(object):
         self.testDict.syncWrites()
             
     def testReopen(self):
-            ## 'Reopening read only'
+            # Reopening read only
             self.testDict.reopen(readOnly = True);
             self.testCheckValues()
             self.testDict.syncWrites()
 
     def testWriteFlush(self):
-            ##Flush then check values
+            # Flush then check values
             self.testDict.syncWrites()
             result = 0
             for i in range(20):
                 if self.testDict[str(i)] == i:
                     result += 1
             self.assertEqual(result,self.size)
-            ##Edit values, flush then check
+            # Edit values, flush then check
             for i in range(20):
                     self.testDict[str(i)] *= 2
             self.testDict.syncWrites()
@@ -152,68 +170,101 @@ class DBWrapTest(object):
     
     def testWriteToReadOnly(self):
         prevent_write = False
-        ## 'Attempt to write to read only'
+        # Attempt to write to read only
         self.testDict.reopen(readOnly = True)
-        try:
-            self.testDict['0'] = 7 ##raise error
-        except AttributeError:
-            prevent_write = True
-        self.assertEqual(prevent_write,True)
+        self.assertRaises(AttributeError, self.testDict.__setitem__, '0', 7)
         self.testDict.syncWrites()
 
+'''
+Tests MemFromFileDict basic functionality.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 class MemFromFileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
         return filedbwrap.MemFromFileDict(os.path.join(self.dirname, '01'),
-                                               readOnly=False,
-                                               clear=True,
-                                               stringifyKeys=True,
-                                               databaseDefaultFunc=lambda: None)
+                                          readOnly=False,
+                                          clear=True,
+                                          stringifyKeys=True,
+                                          databaseDefaultFunc=lambda: None)
     def clearCache(self):
         return False
      
+'''
+Tests FileDict basic functionality.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 class FileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
         return filedbwrap.FileDict(os.path.join(self.dirname, '02'),
-                               readOnly=False,
-                               clear=True,
-                               stringifyKeys=True,
-                               databaseDefaultFunc=lambda: None)
+                                   readOnly=False,
+                                   clear=True,
+                                   stringifyKeys=True,
+                                   databaseDefaultFunc=lambda: None)
     def clearCache(self):
         return False   
     
+'''
+Tests SplitFileDict basic functionality.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 class SplitFileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
         return filedbwrap.SplitFileDict(os.path.join(self.dirname, '03'),
-                                  splitKeys=tuple(getBaseAlphabet()),
-                                  splitFunc = firstAlphaChar,
-                                  readOnly=False,
-                                  stringifyKeys=True,
-                                  clear=True,
-                                  databaseDefaultFunc=lambda: None)  
+                                        splitKeys=tuple(getBaseAlphabet()),
+                                        splitFunc = firstAlphaChar,
+                                        readOnly=False,
+                                        stringifyKeys=True,
+                                        clear=True,
+                                        databaseDefaultFunc=lambda: None)  
     def clearCache(self):
         return False 
+    
+'''
+Tests MemFromFileDict with 0 size cache.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
         return filedbwrap.MemFromFileDict(os.path.join(self.dirname, '01'),
-                                               readOnly=False,
-                                               clear=True,
-                                               stringifyKeys=True,
-                                               cacheSize = 0,
-                                               databaseDefaultFunc=lambda: None)
+                                          readOnly=False,
+                                          clear=True,
+                                          stringifyKeys=True,
+                                          cacheSize = 0,
+                                          databaseDefaultFunc=lambda: None)
     def clearCache(self):
         return False
      
+'''
+Tests FileDict with 0 size cache.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 class FileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
         return filedbwrap.FileDict(os.path.join(self.dirname, '02'),
-                               readOnly=False,
-                               clear=True,
-                               stringifyKeys=True,
-                               cacheSize = 0,
-                               databaseDefaultFunc=lambda: None)
+                                   readOnly=False,
+                                   clear=True,
+                                   stringifyKeys=True,
+                                   cacheSize = 0,
+                                   databaseDefaultFunc=lambda: None)
     def clearCache(self):
         return False   
     
+'''
+Tests SplitFileDict with 0 size cache.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 class SplitFileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
         return filedbwrap.SplitFileDict(os.path.join(self.dirname, '03'),

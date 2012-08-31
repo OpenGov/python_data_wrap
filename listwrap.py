@@ -1,13 +1,16 @@
 import collections
 
 '''
-Helper functions for checking non-string item length
+Helper function for checking non-string item length
 '''
 def nonStrLen(item):
     if isinstance(item, basestring):
         raise TypeError()
     return len(item)
 
+'''
+Helper function for determining if object has __len__ defined
+'''
 def hasLen(item):
     try:
         len(item)
@@ -15,6 +18,10 @@ def hasLen(item):
     except:
         return False
 
+'''
+Helper function for checking non-string item length.
+Returns None on failure instead of throwing a TypeError.
+'''
 def nonStrLenNoThrow(item):
     try:
         return nonStrLen(item)
@@ -22,7 +29,7 @@ def nonStrLenNoThrow(item):
         return 0
     
 '''
-Converts negative indicies to positive ones
+Converts negative indices to positive ones
 '''
 def getNonNegativeIndex(index, length):
     while index < 0:
@@ -99,7 +106,14 @@ def getTrueSlice(dims, dataLen):
     return slice(start, stop, step)
 
 '''
-Defines an ordered set of dimensions
+Defines an ordered set of dimensions. These can be used to scope
+and select subsets of data. These act much the same as slices
+in standard list operators but can be combined easily and have
+an application for a depth of dimensions.
+
+@param orderedRanges The arguments which provide the ordered 
+                     restrictions at each sub-dimension. 
+@author Matt Seal
 '''
 class DimensionRange(collections.MutableMapping):
     def __init__(self, *orderedRanges):
@@ -116,6 +130,9 @@ class DimensionRange(collections.MutableMapping):
             return DimensionRange(self, other)
         else:
             raise ValueError(str(other)+" is not of type DimensionRange")
+    
+    def __iadd__(self, other):
+        self.__init__(self + other)
         
     '''
     Same as __add__(self, other)
@@ -227,12 +244,13 @@ class DimensionRange(collections.MutableMapping):
         return self.orderedRanges.__iter__()
 
 '''
-Defines an iterator that relies on an object's
-__getitem__ call to walk through all elements
-in the data object by index. This is useful
-for wrapper on datasets, which return new objects
-at each index, rather than an underlying 
+Defines an iterator that relies on an object's __getitem__ 
+call to walk through all elements in the data object by 
+index. This is useful for wrapper on datasets, which return 
+new objects at each index, rather than an underlying 
 database's raw information.
+
+@author Matt Seal
 '''
 class ListIter(object):
     def __init__(self, iterable):
@@ -257,6 +275,12 @@ ListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
 dataRange of 0 on a non-iterable sublists will
 return the non-iterable element as though it were
 a tuple of one element.
+
+@param data Fixed length list of arbitrary data
+@param dimensionRanges An arbitrary number of dimension
+                       restrictions that are combined to
+                       form the subset.
+@author Matt Seal
 '''
 class FixedListSubset(collections.Sequence):
     '''
@@ -491,6 +515,9 @@ A constant list of zeros with fixed memory footprint.
 This is useful for passing a placeholder instead of
 a real list, especially when the length could be very
 large.
+
+@param length The number of 'zeros' this list represents
+@author Matt Seal
 '''
 class ZeroList(collections.Sequence):
     def __init__(self, length):

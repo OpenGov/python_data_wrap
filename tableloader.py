@@ -2,6 +2,7 @@ from openpyxl import load_workbook
 import xlrd
 import re,csv,os
 
+# Used throughout -- never changed
 xlsxExtRegex = re.compile(r'(\.xlsx)\s*$')
 xlsExtRegex = re.compile(r'(\.xls)\s*$')
 csvExtRegex = re.compile(r'(\.csv)\s*$')
@@ -10,6 +11,8 @@ csvExtRegex = re.compile(r'(\.csv)\s*$')
 Loads an arbitrary file type (xlsx, xls, or csv like) and returns
 a list of 2D tables. For csv files this will be a list of one table,
 but excel formats can have many tables/worksheets.
+
+@author Matt Seal
 '''
 def read(filename):
     if re.search(xlsxExtRegex, filename):
@@ -26,6 +29,9 @@ def read(filename):
         
 '''
 Gets new version excel data. This will not load old '.xls' files.
+
+@author Joe Maguire
+@editor Matt Seal
 '''
 def getDataXlsx(filename):
     wb = load_workbook(filename)
@@ -48,6 +54,9 @@ def getDataXlsx(filename):
 
 '''
 Gets old version excel data. This will not load new '.xlsx' files.
+
+@author Joe Maguire
+@editor Matt Seal
 '''
 def getDataXls(filename):
     def tupledateToIsoDate(tupledate):
@@ -111,6 +120,8 @@ def getDataXls(filename):
 
 '''
 Gets good old csv data from a file.
+
+@author Matt Seal
 '''
 def getDataCsv(filename):
     table = []
@@ -123,7 +134,11 @@ def getDataCsv(filename):
     return [table]
 
 '''
-Expects data to be a list of 2D tables/worksheets.
+Writes 2D tables to file.
+
+@param data 2D list of tables/worksheets
+@param filename Name of the output file (determines type)
+@author Matt Seal
 '''
 def write(data, filename):
     if re.search(xlsxExtRegex, filename):
@@ -134,13 +149,34 @@ def write(data, filename):
         return writeCsv(data, filename)
     else:
         return writeCsv(data, filename)
-        
+      
+'''
+Writes out to new excel format.
+
+@param data 2D list of tables/worksheets
+@param filename Name of the output file
+@author Matt Seal
+'''  
 def writeXlsx(data, filename):
     raise NotImplementedError("Xlsx writing not implemented")
 
+'''
+Writes out to old excel format.
+
+@param data 2D list of tables/worksheets
+@param filename Name of the output file
+@author Matt Seal
+''' 
 def writeXls(data, filename):
     raise NotImplementedError("Xls writing not implemented")
-                
+
+'''
+Writes out to csv format.
+
+@param data 2D list of tables/worksheets
+@param filename Name of the output file
+@author Matt Seal
+'''    
 def writeCsv(data, filename):
     nameExtension = len(data) > 1
     root, ext = os.path.splitext(filename)

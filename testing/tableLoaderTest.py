@@ -7,6 +7,13 @@ import csv
 import unittest
 from os.path import dirname
 
+'''
+Helper function which compares the loaded data against
+another csv
+
+@author Joe Maguire
+@editor Matt Seal
+'''
 def compareToCSV(filename, array):
     master = csv.reader(open(filename,"r"))
  
@@ -23,7 +30,14 @@ def compareToCSV(filename, array):
    
     return True
 
-class FileConverterTest(unittest.TestCase):
+'''
+Tests the capabilities to load tables from csv, xls and xlsx
+formats.
+
+@author Joe Maguire
+@editor Matt Seal
+'''
+class TableLoaderTest(unittest.TestCase):
     def setUp(self):
         self.csv_test = dirname(__file__)+'/tableLoadData/raw/csv_test.csv'
         self.csv_master = dirname(__file__)+'/tableLoadData/master/csv_master.csv'

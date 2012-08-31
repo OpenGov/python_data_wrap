@@ -2,7 +2,12 @@ import collections
 from listwrap import ListIter
 
 '''
-Generates a Transpose Wrapper of a 2D table.
+Generates a Transpose Wrapper of a 2D table. The original
+table is not copied. Accesses to rows map to columns and
+columns to rows.
+
+@param table 2D table of data (must be rectangular)
+@author Matt Seal
 '''
 class TableTranpose(collections.Sequence):
     '''

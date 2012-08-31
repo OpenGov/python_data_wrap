@@ -1,5 +1,9 @@
 import collections, shelve, os
 
+'''
+Helper function for all file wrappers to identify
+standard extension.
+'''
 def getDefaultFileExt():
     return "fd"
 
@@ -22,6 +26,8 @@ expected.
 NOTE: Pushing None values into the dictionary will cause an exception
 and getting an item with None value is considered to be an entry for
 no item present.
+
+@author Matt Seal
 '''
 class UnorderedCachedDict(collections.MutableMapping):
     def __init__(self, database, cacheSize, readOnly=False, 
@@ -242,6 +248,8 @@ Acts much like an UnorderedCachedDict except it stores key existence
 instead of key value pairs. Thus the data is still stored in the
 database as a dictionary, but treated as a set on the external
 interface.
+
+@author Matt Seal
 '''
 class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
     def __init__(self, database, cacheSize, readOnly=False, cacheMisses=True, 
@@ -294,6 +302,8 @@ This is a standard dictionary, with some additional functions
 for syntax compatability with other DB wrappers. This is slower
 than a normal dictionary and should only be used to keep syntax
 standardized among several databases
+
+@author Matt Seal
 '''
 class MemDict(collections.MutableMapping):
     # Careful with changing __init__ params and forgetting them in _reinit
@@ -407,6 +417,8 @@ class MemDict(collections.MutableMapping):
 '''
 This wraps a standard dictionary with a file persistence that
 allows the dictionary to be reloaded and/or saved upon closing.
+
+@author Matt Seal
 '''    
 class MemFromFileDict(MemDict):
     # Careful with changing __init__ params and forgetting them in _reinit
@@ -485,6 +497,8 @@ memory cache. The database is saved to file when the cache
 gets too large or it is synced. This allows for very large
 databases to be stored in the filesystem without consuming
 all available memory.
+
+@author Matt Seal
 '''
 class FileDict(UnorderedCachedDict):
     # Careful with changing __init__ params and forgetting them in _reinit
@@ -549,6 +563,8 @@ class FileDict(UnorderedCachedDict):
         
 '''
 Much like a FileDict, except treated as a Set instead.
+
+@author Matt Seal
 '''
 class FileSet(UnorderedCachedSet):
     # Careful with changing __init__ params and forgetting them in reopen/clear
@@ -625,6 +641,8 @@ so make sure updates to splitKeys also updates splitFunc.
 
 If a cacheSize if passed through kwargs, it is evenly divided among all
 databases.
+
+@author Matt Seal
 '''
 class SplitDbDict(collections.MutableMapping):
     def __init__(self, dbname, baseDbClass, splitKeys, splitFunc, keyedClasses=None, 
@@ -770,6 +788,8 @@ so make sure updates to splitKeys also updates splitFunc.
 
 If a cacheSize if passed through kwargs, it is evenly divided among all
 databases.
+
+@author Matt Seal
 '''
 class SplitDbSet(collections.MutableSet, SplitDbDict):
     def __init__(self, dbname, baseDbClass, splitKeys, splitFunc, keyedClasses=None, 
@@ -836,6 +856,8 @@ class SplitDbSet(collections.MutableSet, SplitDbDict):
 Defines a split DB (see SplitDbDict) based on separate files.
 This is useful if you have a large dictionary of words and want
 to store all words with the same first character together.
+
+@author Matt Seal
 '''
 class SplitFileDict(SplitDbDict):
     def __init__(self, dbname, splitKeys, splitFunc, dbext=None, readOnly=False, 
@@ -849,6 +871,8 @@ class SplitFileDict(SplitDbDict):
         
 '''
 Much like a SplitFileDict, except treated as a Set instead.
+
+@author Matt Seal
 '''
 class SplitFileSet(SplitDbSet):
     def __init__(self, dbname, splitKeys, splitFunc, dbext=None, readOnly=False, 
