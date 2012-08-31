@@ -2,21 +2,12 @@
 from initSubdir import checkSubdirPath; checkSubdirPath(__name__)
 import unittest
 import re
+import itertools
 import regextypes
 import regexdatatypes
 
 def allCasings(inStr):
-    if not inStr:
-        yield ""
-    else:
-        first = inStr[:1]
-        if first.lower() == first.upper():
-            for subCasing in allCasings(inStr[1:]):
-                yield first + subCasing
-        else:
-            for subCasing in allCasings(inStr[1:]):
-                yield first.lower() + subCasing
-                yield first.upper() + subCasing
+    return (''.join(t) for t in itertools.product(*zip(inStr.lower(), inStr.upper())))
                 
 def prefixSuffixWhitespace(prefix, suffix):
     return (not prefix or prefix.isspace()) and (not suffix or suffix.isspace())
