@@ -26,10 +26,12 @@ There are also some file loading/saving modules for various formats.
 
 ### Dependency Installation
 Download xlrd from http://pypi.python.org/pypi/xlrd
+
     cd <xlrd directory>
     [sudo] python setup.py install
 
 Download hjunes-openpyxl (python version fixes) from https://bitbucket.org/hjunes/openpyxl/downloads
+
     cd <openpyxl directory>
     [sudo] python setup.py install
 
