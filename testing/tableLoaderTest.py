@@ -12,7 +12,7 @@ Helper function which compares the loaded data against
 another csv
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 def compareToCSV(filename, array):
     master = csv.reader(open(filename,"r"))
@@ -35,7 +35,7 @@ Tests the capabilities to load tables from csv, xls and xlsx
 formats.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class TableLoaderTest(unittest.TestCase):
     def setUp(self):

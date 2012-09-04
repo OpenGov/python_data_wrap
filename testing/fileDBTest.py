@@ -10,7 +10,7 @@ wrapper attributes -- for now it's stable but future
 changes could disrupt these.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 
 '''
@@ -41,7 +41,7 @@ def getBaseAlphabet():
 Base class used to define DBWrap tests.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class DBWrapTest(object):
     def setUp(self):
@@ -179,7 +179,7 @@ class DBWrapTest(object):
 Tests MemFromFileDict basic functionality.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class MemFromFileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
@@ -195,7 +195,7 @@ class MemFromFileTest(DBWrapTest, unittest.TestCase):
 Tests FileDict basic functionality.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class FileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
@@ -211,7 +211,7 @@ class FileTest(DBWrapTest, unittest.TestCase):
 Tests SplitFileDict basic functionality.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class SplitFileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
@@ -229,7 +229,7 @@ class SplitFileTest(DBWrapTest, unittest.TestCase):
 Tests MemFromFileDict with 0 size cache.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
@@ -246,7 +246,7 @@ class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
 Tests FileDict with 0 size cache.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class FileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
@@ -263,7 +263,7 @@ class FileTestCacheZero(DBWrapTest, unittest.TestCase):
 Tests SplitFileDict with 0 size cache.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 class SplitFileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):

@@ -31,7 +31,7 @@ def read(filename):
 Gets new version excel data. This will not load old '.xls' files.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 def getDataXlsx(filename):
     wb = load_workbook(filename)
@@ -56,7 +56,7 @@ def getDataXlsx(filename):
 Gets old version excel data. This will not load new '.xlsx' files.
 
 @author Joe Maguire
-@editor Matt Seal
+@author Matt Seal
 '''
 def getDataXls(filename):
     def tupledateToIsoDate(tupledate):
