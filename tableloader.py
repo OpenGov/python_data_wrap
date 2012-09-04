@@ -123,13 +123,16 @@ Gets good old csv data from a file.
 
 @author Matt Seal
 '''
-def getDataCsv(filename):
+def getDataCsv(filename, loadAsUnicode=True):
     table = []
     
-    with open(filename, "r") as file:
-        csvfile = csv.reader(file)
+    with open(filename, "rb") as file:
+        csvfile = csv.reader(file, dialect=csv.excel)
         for line in csvfile:
-            table.append(line)
+            if loadAsUnicode:
+                table.append([unicode(cell, 'utf-8') for cell in line])
+            else:
+                table.append(line)
             
     return [table]
 
