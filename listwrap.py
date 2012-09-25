@@ -118,8 +118,8 @@ an application for a depth of dimensions.
 class DimensionRange(collections.MutableMapping):
     def __init__(self, *orderedRanges):
         self.orderedRanges = []
-        for range in orderedRanges:
-            self.addRange(range)
+        for rangeRestriction in orderedRanges:
+            self.addRange(rangeRestriction)
             
     '''
     Creates a new DimensionRange object with other
@@ -193,22 +193,22 @@ class DimensionRange(collections.MutableMapping):
     '''
     Combines an arbitrary length list of ranges into a single slice
     '''
-    def _combineListsOfRangesOnLength(self, dataLen, first, *list):
-        current = first
-        for next in list:
-            current = self._combineRangesOnLength(dataLen, current, next)
-        return current
+    def _combineListsOfRangesOnLength(self, dataLen, first, *rangelist):
+        currentrange = first
+        for nextrange in rangelist:
+            currentrange = self._combineRangesOnLength(dataLen, currentrange, nextrange)
+        return currentrange
         
     def __getitem__(self, index):
         return self.orderedRanges[index]
     
-    def _slicify(self, range):
-        if isinstance(range, slice):
-            return range
-        elif nonStrLenNoThrow(range) == 0:
-            return slice(range, range+1, None)
-        elif len(range) > 0:
-            return slice(*range)
+    def _slicify(self, rangeRestriction):
+        if isinstance(rangeRestriction, slice):
+            return rangeRestriction
+        elif nonStrLenNoThrow(rangeRestriction) == 0:
+            return slice(rangeRestriction, rangeRestriction+1, None)
+        elif len(rangeRestriction) > 0:
+            return slice(*rangeRestriction)
         else:
             return slice(None, None, None)
         
@@ -218,21 +218,21 @@ class DimensionRange(collections.MutableMapping):
     def __repr__(self):
         return "DimensionRange" + self.orderedRanges.__repr__()
     
-    def addRange(self, range):
+    def addRange(self, rangeRestriction):
         # Check for nested ranges
-        if isinstance(range, DimensionRange):
-            for range in range.orderedRanges:
-                self.addRange(range)
+        if isinstance(rangeRestriction, DimensionRange):
+            for rangeRestriction in rangeRestriction.orderedRanges:
+                self.addRange(rangeRestriction)
         else:
-            slicedRange = self._slicify(range)
+            slicedRange = self._slicify(rangeRestriction)
             # If the slice is a pass all, don't bother appending
             if (slicedRange.start != None or
                 slicedRange.stop != None or
                 slicedRange.step != None):
                 self.orderedRanges.append(slicedRange)
     
-    def __setitem__(self, index, range):
-        self.orderedRanges[index] = self._slicify(range)
+    def __setitem__(self, index, rangeRestriction):
+        self.orderedRanges[index] = self._slicify(rangeRestriction)
         
     def __len__(self):
         return self.orderedRanges.__len__()
