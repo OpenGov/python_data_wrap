@@ -54,8 +54,8 @@ class FileDataLoader(object):
             else:
                 return [line.split(self.delim) for line in file.readlines()]
             
-    def loadData(self):
-        if getExtension(self.filename) == 'csv':
+    def loadData(self, forceCSV=False):
+        if forceCSV or getExtension(self.filename) == 'csv':
             return self._loadCSV()
         else:
             return self._loadRaw()
