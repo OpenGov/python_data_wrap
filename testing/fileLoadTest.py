@@ -1,3 +1,5 @@
+# This import triggers the __init__.py code regardless of how this file is called
+import testing
 import unittest
 from datawrap import fileloader
 
