@@ -11,6 +11,7 @@ setup(
     author = "Matthew Seal",
     author_email = "mseal@delphi.us",
     description = ("Tools for wrapping data and manipulating it in efficient ways"),
+    install_requires=['xlrd','openpyxl'],
     packages=['datawrap'],
     long_description=read('README.md'),
 )
