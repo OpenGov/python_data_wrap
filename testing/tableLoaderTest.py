@@ -1,7 +1,4 @@
-# Import this to be able to load parent directory modules
-from initSubdir import checkSubdirPath; checkSubdirPath(__name__)
-
-import tableloader
+from datawrap import tableloader
 import hashlib
 import csv
 import unittest

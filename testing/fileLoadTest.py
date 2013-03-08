@@ -1,5 +1,5 @@
 import unittest
-import fileloader
+from datawrap import fileloader
 
 # TODO implement
 class DataLoadTest(unittest.TestCase):

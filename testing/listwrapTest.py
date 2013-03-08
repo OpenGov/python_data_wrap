@@ -1,6 +1,4 @@
-# Import this to be able to load parent directory modules
-from initSubdir import checkSubdirPath; checkSubdirPath(__name__)
-import listwrap
+from datawrap import listwrap
 import unittest
 
 '''
