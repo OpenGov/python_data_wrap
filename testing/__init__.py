@@ -8,7 +8,6 @@ __all__.extend([os.path.split(module)[0] for module in glob.glob('*/__init__.py'
 
 # Add parent for datawrap import capabilities
 sys.path.append(os.path.abspath(os.path.join(__file__, '..')))
-import datawrap
 
 del sys
 del glob
