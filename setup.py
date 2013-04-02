@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name = "PyDataWrap",
-    version = "1.1.0",
+    version = "1.1.1",
     author = "Matthew Seal",
     author_email = "mseal@delphi.us",
     description = ("Tools for wrapping data and manipulating it in efficient ways"),

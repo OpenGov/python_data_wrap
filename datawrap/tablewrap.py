@@ -1,6 +1,6 @@
 import sys
 import collections
-from listwrap import ListIter
+from listwrap import ListIter, FixedListSubset
 
 '''
 Updates a table so that all rows are the same length by
@@ -46,8 +46,10 @@ class TableTranpose(collections.Sequence):
             return self._transpose._width
         
         def __getitem__(self, index):
-            #TODO splices
-            return self._transpose._table[index][self._rowIndex]
+            if isinstance(index, slice):
+                return FixedListSubset(self, index)
+            else:
+                return self._transpose._table[index][self._rowIndex]
         
         def __setitem__(self, index, value):
             self._transpose._table[index][self._rowIndex] = value
@@ -74,8 +76,10 @@ class TableTranpose(collections.Sequence):
         return self._length
     
     def __getitem__(self, index):
-        #TODO splices
-        return self.TableTransposeRow(self, index)
+        if isinstance(index, slice):
+            return FixedListSubset(self, index)
+        else:
+            return self.TableTransposeRow(self, index)
     
     def __iter__(self):
         return ListIter(self)

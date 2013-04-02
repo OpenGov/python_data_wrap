@@ -1,9 +1,10 @@
 # This import triggers the __init__.py code regardless of how this file is called
-import testing
+import tests
 from datawrap import tableloader
 import hashlib
 import csv
 import unittest
+import os
 from os.path import dirname
 
 '''
@@ -38,19 +39,20 @@ formats.
 '''
 class TableLoaderTest(unittest.TestCase):
     def setUp(self):
-        self.csv_test = dirname(__file__)+'/tableLoadData/raw/csv_test.csv'
-        self.csv_master = dirname(__file__)+'/tableLoadData/master/csv_master.csv'
+        self.datadir = os.path.join(dirname(__file__), 'tableLoadData')
+        self.csv_test = os.path.join(self.datadir, 'raw', 'csv_test.csv')
+        self.csv_master = os.path.join(self.datadir, 'master', 'csv_master.csv')
         
-        self.xls_test = dirname(__file__)+'/tableLoadData/raw/xls_test.xls'
-        self.xlsx_test = dirname(__file__)+'/tableLoadData/raw/xlsx_test.xlsx'
+        self.xls_test = os.path.join(self.datadir, 'raw', 'xls_test.xls')
+        self.xlsx_test = os.path.join(self.datadir, 'raw', 'xlsx_test.xlsx')
         
-        self.xls_formula_test = dirname(__file__)+'/tableLoadData/raw/formulas_xls.xls'
-        self.xlsx_formula_test = dirname(__file__)+'/tableLoadData/raw/formulas_xlsx.xlsx'
+        self.xls_formula_test = os.path.join(self.datadir, 'raw', 'formulas_xls.xls')
+        self.xlsx_formula_test = os.path.join(self.datadir, 'raw', 'formulas_xlsx.xlsx')
         
-        self.formula_master = dirname(__file__)+'/tableLoadData/master/formulas_master.csv'
-        self.excel_master1 = dirname(__file__)+'/tableLoadData/master/excel_sheet1_master.csv'
-        self.excel_master2 = dirname(__file__)+'/tableLoadData/master/excel_sheet2_master.csv'
-        self.excel_master3 = dirname(__file__)+'/tableLoadData/master/excel_sheet3_master.csv'
+        self.formula_master = os.path.join(self.datadir, 'master', 'formulas_master.csv')
+        self.excel_master1 = os.path.join(self.datadir, 'master', 'excel_sheet1_master.csv')
+        self.excel_master2 = os.path.join(self.datadir, 'master', 'excel_sheet2_master.csv')
+        self.excel_master3 = os.path.join(self.datadir, 'master', 'excel_sheet3_master.csv')
     
     def testCSV(self):
         data = tableloader.read(self.csv_test)

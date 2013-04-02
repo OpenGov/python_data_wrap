@@ -267,10 +267,10 @@ class ListIter(object):
 Wraps list-style data with an iterator and getters 
 which only return a subset of the original data.
 
-ListSubset([(1,2,3), (4,5,6)], 2) would effectively
+FixedListSubset([(1,2,3), (4,5,6)], 2) would effectively
 represent the list [2, 5]
 
-ListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
+FixedListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
 
 dataRange of 0 on a non-iterable sublists will
 return the non-iterable element as though it were

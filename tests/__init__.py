@@ -9,7 +9,7 @@ __all__.extend([module.split(os.path.sep)[-2]
                 for module in glob.glob(os.path.dirname(__file__)+'/*/__init__.py')])
 
 # Add parent for datawrap import capabilities
-sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 del sys
 del glob

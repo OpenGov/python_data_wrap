@@ -1,8 +1,9 @@
 # This import triggers the __init__.py code regardless of how this file is called
-import testing
+import tests
 from datawrap import filedbwrap
 import unittest
 import os
+from os.path import dirname
 
 '''
 NOTE this testing library needs more tests for changing
@@ -45,9 +46,9 @@ Base class used to define DBWrap tests.
 '''
 class DBWrapTest(object):
     def setUp(self):
-        self.dirname = 'fileDB'
-        if not os.path.exists(self.dirname):
-            os.makedirs(self.dirname)
+        self.datadir = os.path.join(dirname(__file__), 'fileDB')
+        if not os.path.exists(self.datadir):
+            os.makedirs(self.datadir)
         
         self.testDict = self.createDictionary()
 
@@ -183,7 +184,7 @@ Tests MemFromFileDict basic functionality.
 '''
 class MemFromFileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
-        return filedbwrap.MemFromFileDict(os.path.join(self.dirname, '01'),
+        return filedbwrap.MemFromFileDict(os.path.join(self.datadir, '01'),
                                           readOnly=False,
                                           clear=True,
                                           stringifyKeys=True,
@@ -199,7 +200,7 @@ Tests FileDict basic functionality.
 '''
 class FileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
-        return filedbwrap.FileDict(os.path.join(self.dirname, '02'),
+        return filedbwrap.FileDict(os.path.join(self.datadir, '02'),
                                    readOnly=False,
                                    clear=True,
                                    stringifyKeys=True,
@@ -215,7 +216,7 @@ Tests SplitFileDict basic functionality.
 '''
 class SplitFileTest(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
-        return filedbwrap.SplitFileDict(os.path.join(self.dirname, '03'),
+        return filedbwrap.SplitFileDict(os.path.join(self.datadir, '03'),
                                         splitKeys=tuple(getBaseAlphabet()),
                                         splitFunc = firstAlphaChar,
                                         readOnly=False,
@@ -233,7 +234,7 @@ Tests MemFromFileDict with 0 size cache.
 '''
 class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
-        return filedbwrap.MemFromFileDict(os.path.join(self.dirname, '01'),
+        return filedbwrap.MemFromFileDict(os.path.join(self.datadir, '01'),
                                           readOnly=False,
                                           clear=True,
                                           stringifyKeys=True,
@@ -250,7 +251,7 @@ Tests FileDict with 0 size cache.
 '''
 class FileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
-        return filedbwrap.FileDict(os.path.join(self.dirname, '02'),
+        return filedbwrap.FileDict(os.path.join(self.datadir, '02'),
                                    readOnly=False,
                                    clear=True,
                                    stringifyKeys=True,
@@ -267,7 +268,7 @@ Tests SplitFileDict with 0 size cache.
 '''
 class SplitFileTestCacheZero(DBWrapTest, unittest.TestCase):
     def createDictionary(self):
-        return filedbwrap.SplitFileDict(os.path.join(self.dirname, '03'),
+        return filedbwrap.SplitFileDict(os.path.join(self.datadir, '03'),
                                   splitKeys=tuple(getBaseAlphabet()),
                                   splitFunc = firstAlphaChar,
                                   readOnly=False,
