@@ -400,7 +400,7 @@ class FixedListSubset(collections.Sequence):
     Helper function which implements single index requests
     for __getitem__
     '''
-    def _getSingleIndexRequest(self, index):
+    def _getSingleIndexRequest(self, index, setToValue=False, value=None):
         adjustedIndex = index
         # Multiply by step length
         if self.range.step:
@@ -433,6 +433,8 @@ class FixedListSubset(collections.Sequence):
                                  "Dimension cannot be applied to elements with no len()")
             return self.builder(elem, *self._dimRanges[1:])
         else:
+            if setToValue:
+                self._data[adjustedIndex] = value
             return elem
         
     '''
@@ -509,6 +511,41 @@ class FixedListSubset(collections.Sequence):
     
     def __deepcopy__(self, memo):
         return self.builder(self.deepCopyAsList(memo))
+    
+'''
+Wraps list-style data with an iterator and getters 
+which only return a subset of the original data. This
+class is much like FixedListSubset, except you can set
+the value of elements at a specific index. If you replace
+a dimensional element (i.e. the first dimension of a 2D
+table) you can break the object's logic if the new element
+is not the same size/dimensionality. For this reason this
+class is separate from FixedListSubset.
+
+MutableListSubset([(1,2,3), (4,5,6)], 2) would effectively
+represent the list [2, 5]
+
+MutableListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
+
+dataRange of 0 on a non-iterable sublists will
+return the non-iterable element as though it were
+a tuple of one element.
+
+@param data Fixed length list of arbitrary data
+@param dimensionRanges An arbitrary number of dimension
+                       restrictions that are combined to
+                       form the subset.
+@author Matt Seal
+'''
+class MutableListSubset(collections.MutableSequence, FixedListSubset):
+    def __setitem__(self, index, value):
+        self._getSingleIndexRequest(index, True, value)
+    
+    def insert(self, index, value):
+        raise NotImplementedError("Cannot insert into a List Subset")
+    
+    def __delitem__(self, index):
+        raise NotImplementedError("Cannot delete from a List Subset")
     
 '''
 A constant list of zeros with fixed memory footprint. 

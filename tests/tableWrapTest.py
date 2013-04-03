@@ -5,7 +5,9 @@ import unittest
 
 class TableWrapTest(unittest.TestCase):
     def setUp(self):
-        self.table = [[1,2,3,4,5], [6,7,8,9,10], ['a','b','c','d','e']]
+        # self.table doesn't need the tablewrap.Table object to work
+        # but this tests both wrappers at once
+        self.table = tablewrap.Table([[1,2,3,4,5], [6,7,8,9,10], ['a','b','c','d','e']])
         self.transpose = tablewrap.TableTranpose(self.table)
 
     def testTableTranpose(self):
@@ -54,12 +56,15 @@ class TableWrapTest(unittest.TestCase):
     def testTableTransposeExceptions(self):
         # Check that valid finds bad tables
         badTable = [[1, 2, 3], ['a', 'b'], [4, 5, 6]]
+        self.assertRaises(ValueError, lambda: tablewrap.Table(badTable))
         self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(badTable))
         
         badTable = [[1], ['a', 'b'], [4, 5, 6]]
+        self.assertRaises(ValueError, lambda: tablewrap.Table(badTable))
         self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(badTable))
         
         badTable = [[1, 2], ['a'], [4]]
+        self.assertRaises(ValueError, lambda: tablewrap.Table(badTable))
         self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(badTable))
         
         badTable = [[1, 2], ['a'], [4]]
