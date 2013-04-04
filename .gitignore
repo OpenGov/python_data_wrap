@@ -1,3 +1,5 @@
 /dist
 /PyDataWrap.egg-info
 /build
+.project
+.pydevproject
