@@ -1,6 +1,6 @@
 import sys
 import collections
-from listwrap import ListIter, FixedListSubset
+from listwrap import ListIter, MutableListSubset
 
 '''
 Updates a table so that all rows are the same length by
@@ -25,9 +25,55 @@ def squarifyTable(table):
                 row.extend([None]*(maxLength-rowLen))
 
 '''
+Wraps a 2D table with a basic object. This difference between
+this object and the underlying list of lists is that this table
+slices and indexes by reference. Any changes to a slice of the
+table also changes the original table.
+
+@author Matt Seal
+'''
+class Table(collections.Sequence):
+    '''
+    @param table A 2D table, usually a list of lists.
+    @param verify Flag for verifying that the table is complete 
+                  (all rows have same width).
+    '''
+    def __init__(self, table, verify=True):
+        self._table = table
+        self._length = len(table) if table else 0
+        self._width = len(table[0]) if table and table[0] else 0
+        if verify:
+            for row in self._table:
+                if len(row) != self._width:
+                    raise ValueError("Non-rectangular table passed to TableTranpose")
+                
+    '''
+    Gets a transpose reference to this table.
+    '''
+    def transpose(self):
+        return TableTranpose(self, False)
+        
+    def __len__(self):
+        return self._length
+    
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return MutableListSubset(self, index)
+        else:
+            return MutableListSubset(self._table[index])
+    
+    def __iter__(self):
+        return ListIter(self)
+
+'''
 Generates a Transpose Wrapper of a 2D table. The original
 table is not copied. Accesses to rows map to columns and
 columns to rows.
+
+NOTE: all slice requests are by reference instead of by copy!
+This means changes to slice elements change the transpose
+table and consequentially the original table. This is done
+for performance reasons, as copying columns is expensive.
 
 @param table 2D table of data (must be rectangular)
 @author Matt Seal
@@ -47,7 +93,7 @@ class TableTranpose(collections.Sequence):
         
         def __getitem__(self, index):
             if isinstance(index, slice):
-                return FixedListSubset(self, index)
+                return MutableListSubset(self, index)
             else:
                 return self._transpose._table[index][self._rowIndex]
         
@@ -77,7 +123,7 @@ class TableTranpose(collections.Sequence):
     
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return FixedListSubset(self, index)
+            return MutableListSubset(self, index)
         else:
             return self.TableTransposeRow(self, index)
     
