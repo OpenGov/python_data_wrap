@@ -15,18 +15,18 @@ another csv
 @author Matt Seal
 '''
 def compareToCSV(filename, array):
-    master = csv.reader(open(filename,"r"))
- 
-    for i, line in enumerate(master):
-        for j, word in enumerate(line):
-            if(word != array[i][j]):
-                try: # Check if same number (0.00 vs 0)
-                    # XLS & XLSX modules add extra digits for calculated cells.
-                    if round(float(word),8) != round(float(array[i][j]),8):  
-                        #print "Row:",i,"Column:",j,"Master:",word,"Test:",array[i][j],"END"
+    with open(filename,"r") as mfile:
+        master = csv.reader(mfile)
+        for i, line in enumerate(master):
+            for j, word in enumerate(line):
+                if(word != array[i][j]):
+                    try: # Check if same number (0.00 vs 0)
+                        # XLS & XLSX modules add extra digits for calculated cells.
+                        if round(float(word),8) != round(float(array[i][j]),8):  
+                            #print "Row:",i,"Column:",j,"Master:",word,"Test:",array[i][j],"END"
+                            return False
+                    except:
                         return False
-                except:
-                    return False
    
     return True
 
@@ -58,6 +58,12 @@ class TableLoaderTest(unittest.TestCase):
         data = tableloader.read(self.csv_test)
         self.assertTrue(compareToCSV(self.csv_master,data[0]))
     
+    def testContentCSV(self):
+        fname = self.csv_test
+        with open(fname, "r") as dfile:
+            name, ext = os.path.splitext(fname)
+            data = tableloader.read(ext, dfile.read())
+            self.assertTrue(compareToCSV(self.csv_master, data[0]))
        
     def testXLS(self):
         data = tableloader.read(self.xls_test)      
@@ -65,19 +71,51 @@ class TableLoaderTest(unittest.TestCase):
         self.assertTrue(compareToCSV(self.excel_master2,data[1]))
         self.assertTrue(compareToCSV(self.excel_master3,data[2]))
         
+    def testContentXLS(self):
+        fname = self.xls_test
+        with open(fname, "r") as dfile:
+            name, ext = os.path.splitext(fname)
+            data = tableloader.read(ext, dfile.read())
+            self.assertTrue(compareToCSV(self.excel_master1,data[0]))
+            self.assertTrue(compareToCSV(self.excel_master2,data[1]))
+            self.assertTrue(compareToCSV(self.excel_master3,data[2]))
+        
     def testXLSX(self):
         data = tableloader.read(self.xlsx_test) 
         self.assertTrue(compareToCSV(self.excel_master1,data[0]))
         self.assertTrue(compareToCSV(self.excel_master2,data[1]))
         self.assertTrue(compareToCSV(self.excel_master3,data[2]))
         
+    def testContentXLXS(self):
+        fname = self.xlsx_test
+        with open(fname, "r") as dfile:
+            name, ext = os.path.splitext(fname)
+            data = tableloader.read(ext, dfile.read())
+            self.assertTrue(compareToCSV(self.excel_master1,data[0]))
+            self.assertTrue(compareToCSV(self.excel_master2,data[1]))
+            self.assertTrue(compareToCSV(self.excel_master3,data[2]))
+        
     def testFunctionsXLS(self):
         data = tableloader.read(self.xls_formula_test)
         self.assertTrue(compareToCSV(self.formula_master,data[0]))
+        
+    def testContentFunctionsXLS(self):
+        fname = self.xls_formula_test
+        with open(fname, "r") as dfile:
+            name, ext = os.path.splitext(fname)
+            data = tableloader.read(ext, dfile.read())
+            self.assertTrue(compareToCSV(self.formula_master,data[0]))
        
     def testFunctionsXLSX(self):
         data = tableloader.read(self.xlsx_formula_test)
         self.assertTrue(compareToCSV(self.formula_master,data[0]))
+        
+    def testContentFunctionsXLSX(self):
+        fname = self.xlsx_formula_test
+        with open(fname, "r") as dfile:
+            name, ext = os.path.splitext(fname)
+            data = tableloader.read(ext, dfile.read())
+            self.assertTrue(compareToCSV(self.formula_master,data[0]))
 
 if __name__ == '__main__': 
     unittest.main()

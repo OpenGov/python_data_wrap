@@ -1,6 +1,9 @@
-from openpyxl import load_workbook
+from openpyxl import Workbook
+from openpyxl.reader.excel import load_workbook, _load_workbook
 import xlrd
 import re,csv,os
+from StringIO import StringIO
+from zipfile import ZipFile, ZIP_DEFLATED, BadZipfile
 
 # Used throughout -- never changed
 xlsxExtRegex = re.compile(r'(\.xlsx)\s*$')
@@ -14,16 +17,16 @@ but excel formats can have many tables/worksheets.
 
 @author Matt Seal
 '''
-def read(filename):
+def read(filename, filecontents=None):
     if re.search(xlsxExtRegex, filename):
-        return getDataXlsx(filename)
+        return getDataXlsx(filename, filecontents=filecontents)
     elif re.search(xlsExtRegex, filename):
-        return getDataXls(filename)
+        return getDataXls(filename, filecontents=filecontents)
     elif re.search(csvExtRegex, filename):
-        return getDataCsv(filename)
+        return getDataCsv(filename, filecontents=filecontents)
     else:
         try:
-            return getDataCsv(filename)
+            return getDataCsv(filename, filecontents=filecontents)
         except:
             raise ValueError("Unable to load file '"+filename+"' as csv")
         
@@ -33,8 +36,16 @@ Gets new version excel data. This will not load old '.xls' files.
 @author Joe Maguire
 @author Matt Seal
 '''
-def getDataXlsx(filename):
-    wb = load_workbook(filename)
+def getDataXlsx(filename, filecontents=None):
+    if filecontents:
+        # This is a hack to get around the library only providing filename loading
+        filecontents = StringIO(filecontents)
+        archive = ZipFile(filecontents, 'r', ZIP_DEFLATED)
+        wb = Workbook()
+        _load_workbook(wb, archive, filename, False)
+        archive.close()
+    else:
+        wb = load_workbook(filename)
     data = []
     
     for ws in wb.worksheets:
@@ -58,7 +69,7 @@ Gets old version excel data. This will not load new '.xlsx' files.
 @author Joe Maguire
 @author Matt Seal
 '''
-def getDataXls(filename):
+def getDataXls(filename, filecontents=None):
     def tupledateToIsoDate(tupledate):
         """
         Turns a gregorian (year, month, day, hour, minute, nearest_second) into a
@@ -94,12 +105,12 @@ def getDataXls(filename):
             value = xlrd.error_text_from_code[value]
         return value
     
-    def xlrdXlsToArray(filename):
+    def xlrdXlsToArray(filename, filecontents=None):
         """ Returns a list of sheets; each sheet is a dict containing
         * sheet_name: unicode string naming that sheet
         * sheet_data: 2-D table holding the converted cells of that sheet
         """    
-        book       = xlrd.open_workbook(filename)
+        book       = xlrd.open_workbook(filename, file_contents=filecontents)
         sheets     = []
         formatter  = lambda(t,v): formatExcelVal(book,t,v,False)
         
@@ -114,7 +125,7 @@ def getDataXls(filename):
     
     data = []
     
-    for ws in xlrdXlsToArray(filename):
+    for ws in xlrdXlsToArray(filename, filecontents):
         data.append(ws['sheet_data'])
     return data
 
@@ -123,18 +134,28 @@ Gets good old csv data from a file.
 
 @author Matt Seal
 '''
-def getDataCsv(filename, loadAsUnicode=True):
+def getDataCsv(filename, loadAsUnicode=True, filecontents=None):
     table = []
     
-    with open(filename, "rb") as file:
-        csvfile = csv.reader(file, dialect=csv.excel)
+    if filecontents:
+        csvfile = StringIO(filecontents)
+        csvfile = csv.reader(csvfile, dialect=csv.excel)
+        for line in csvfile:
+            if loadAsUnicode:
+                table.append([unicode(cell, 'utf-8') for cell in line])
+            else:
+                table.append(line)
+        return [table]
+    
+    with open(filename, "rb") as csvfile:
+        csvfile = csv.reader(csvfile, dialect=csv.excel)
         for line in csvfile:
             if loadAsUnicode:
                 table.append([unicode(cell, 'utf-8') for cell in line])
             else:
                 table.append(line)
             
-    return [table]
+        return [table]
 
 '''
 Writes 2D tables to file.
