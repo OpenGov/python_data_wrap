@@ -60,7 +60,7 @@ class TableLoaderTest(unittest.TestCase):
     
     def testContentCSV(self):
         fname = self.csv_test
-        with open(fname, "r") as dfile:
+        with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
             self.assertTrue(compareToCSV(self.csv_master, data[0]))
@@ -73,7 +73,7 @@ class TableLoaderTest(unittest.TestCase):
         
     def testContentXLS(self):
         fname = self.xls_test
-        with open(fname, "r") as dfile:
+        with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
             self.assertTrue(compareToCSV(self.excel_master1,data[0]))
@@ -88,7 +88,7 @@ class TableLoaderTest(unittest.TestCase):
         
     def testContentXLXS(self):
         fname = self.xlsx_test
-        with open(fname, "r") as dfile:
+        with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
             self.assertTrue(compareToCSV(self.excel_master1,data[0]))
@@ -101,7 +101,7 @@ class TableLoaderTest(unittest.TestCase):
         
     def testContentFunctionsXLS(self):
         fname = self.xls_formula_test
-        with open(fname, "r") as dfile:
+        with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
             self.assertTrue(compareToCSV(self.formula_master,data[0]))
@@ -112,7 +112,7 @@ class TableLoaderTest(unittest.TestCase):
         
     def testContentFunctionsXLSX(self):
         fname = self.xlsx_formula_test
-        with open(fname, "r") as dfile:
+        with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
             self.assertTrue(compareToCSV(self.formula_master,data[0]))

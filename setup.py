@@ -7,11 +7,11 @@ def read(fname):
 
 setup(
     name = "PyDataWrap",
-    version = "1.1.1",
+    version = "1.1.2",
     author = "Matthew Seal",
     author_email = "mseal@delphi.us",
     description = ("Tools for wrapping data and manipulating it in efficient ways"),
-    install_requires=['xlrd','openpyxl'],
+    install_requires=['xlrd'],
     packages=['datawrap'],
     long_description=read('README.md'),
 )

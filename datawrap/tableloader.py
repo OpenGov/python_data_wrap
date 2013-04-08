@@ -1,9 +1,8 @@
-from openpyxl import Workbook
-from openpyxl.reader.excel import load_workbook, _load_workbook
 import xlrd
-import re,csv,os
+import re
+import csv
+import os
 from StringIO import StringIO
-from zipfile import ZipFile, ZIP_DEFLATED, BadZipfile
 
 # Used throughout -- never changed
 xlsxExtRegex = re.compile(r'(\.xlsx)\s*$')
@@ -31,43 +30,20 @@ def read(filename, filecontents=None):
             raise ValueError("Unable to load file '"+filename+"' as csv")
         
 '''
-Gets new version excel data. This will not load old '.xls' files.
+Loads the new excel format files. Old format files will automatically
+get loaded as well.
 
-@author Joe Maguire
 @author Matt Seal
 '''
 def getDataXlsx(filename, filecontents=None):
-    if filecontents:
-        # This is a hack to get around the library only providing filename loading
-        filecontents = StringIO(filecontents)
-        archive = ZipFile(filecontents, 'r', ZIP_DEFLATED)
-        wb = Workbook()
-        _load_workbook(wb, archive, filename, False)
-        archive.close()
-    else:
-        wb = load_workbook(filename)
-    data = []
-    
-    for ws in wb.worksheets:
-        dimension = ws.calculate_dimension()
-        ws_data = []
-        
-        for row in ws.range(dimension):
-            data_row = []
-           
-            for cell in row:
-                data_row.append(cell.value)
-            ws_data.append(data_row)
-        
-        data.append(ws_data)
-    
-    return data
+    return getDataXls(filename, filecontents)
 
 '''
-Gets old version excel data. This will not load new '.xlsx' files.
+Loads the old excel format files. New format files will automatically
+get loaded as well.
 
-@author Joe Maguire
 @author Matt Seal
+@author Joe Maguire
 '''
 def getDataXls(filename, filecontents=None):
     def tupledateToIsoDate(tupledate):
