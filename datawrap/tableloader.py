@@ -14,6 +14,10 @@ Loads an arbitrary file type (xlsx, xls, or csv like) and returns
 a list of 2D tables. For csv files this will be a list of one table,
 but excel formats can have many tables/worksheets.
 
+@param filename The name of the local file, or the holder for the
+                extension type when the filecontents are supplied.
+@param filecontents The file-like object holding contents of filename.
+                    If left as None, then filename is directly loaded.
 @author Matt Seal
 '''
 def read(filename, filecontents=None):
@@ -33,6 +37,10 @@ def read(filename, filecontents=None):
 Loads the new excel format files. Old format files will automatically
 get loaded as well.
 
+@param filename The name of the local file, or the holder for the
+                extension type when the filecontents are supplied.
+@param filecontents The file-like object holding contents of filename.
+                    If left as None, then filename is directly loaded.
 @author Matt Seal
 '''
 def getDataXlsx(filename, filecontents=None):
@@ -42,6 +50,10 @@ def getDataXlsx(filename, filecontents=None):
 Loads the old excel format files. New format files will automatically
 get loaded as well.
 
+@param filename The name of the local file, or the holder for the
+                extension type when the filecontents are supplied.
+@param filecontents The file-like object holding contents of filename.
+                    If left as None, then filename is directly loaded.
 @author Matt Seal
 @author Joe Maguire
 '''
@@ -108,30 +120,31 @@ def getDataXls(filename, filecontents=None):
 '''
 Gets good old csv data from a file.
 
+@param filename The name of the local file, or the holder for the
+                extension type when the filecontents are supplied.
+@param loadAsUnicode Loads the file as a unicode object 
+@param filecontents The file-like object holding contents of filename.
+                    If left as None, then filename is directly loaded.
 @author Matt Seal
 '''
 def getDataCsv(filename, loadAsUnicode=True, filecontents=None):
     table = []
     
+    def processCsv(csvfile):
+        for line in csvfile:
+            if loadAsUnicode:
+                table.append([unicode(cell, 'utf-8') for cell in line])
+            else:
+                table.append(line)
+    
     if filecontents:
         csvfile = StringIO(filecontents)
-        csvfile = csv.reader(csvfile, dialect=csv.excel)
-        for line in csvfile:
-            if loadAsUnicode:
-                table.append([unicode(cell, 'utf-8') for cell in line])
-            else:
-                table.append(line)
-        return [table]
+        processCsv(csv.reader(csvfile, dialect=csv.excel))
+    else:
+        with open(filename, "rb") as csvfile:
+            processCsv(csv.reader(csvfile, dialect=csv.excel))
     
-    with open(filename, "rb") as csvfile:
-        csvfile = csv.reader(csvfile, dialect=csv.excel)
-        for line in csvfile:
-            if loadAsUnicode:
-                table.append([unicode(cell, 'utf-8') for cell in line])
-            else:
-                table.append(line)
-            
-        return [table]
+    return [table]
 
 '''
 Writes 2D tables to file.
