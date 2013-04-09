@@ -1,10 +1,3 @@
-# This import triggers the __init__.py code regardless of how this file is called
-import tests
-from datawrap import filedbwrap
-import unittest
-import os
-from os.path import dirname
-
 '''
 NOTE this testing library needs more tests for changing
 wrapper attributes -- for now it's stable but future
@@ -14,37 +7,42 @@ changes could disrupt these.
 @author Matt Seal
 '''
 
-'''
-Used to track work on a non primitive with no methods
-defined.
-'''
+# This import triggers the __init__.py code regardless of how this file is called
+import tests
+from datawrap import filedbwrap
+import unittest
+import os
+from os.path import dirname
+
 class FakeObj():
+    '''
+    Used to track work on a non primitive with no methods
+    defined.
+    '''
     def __init__(self,value):
         self.value = int(value)
         
-'''
-Gets the first alpha character in a string
-'''
 def firstAlphaChar(word):
+    '''
+    Gets the first alpha character in a string
+    '''
     for c in word: 
         if c.isalpha():
             return c
     # Default to z if necessary
     return "z"
 
-'''
-The lower case alphabet
-'''
 def getBaseAlphabet():
+    '''The lower case alphabet'''
     return "abcdefghijklmnopqrstuvwxyz"
 
-'''
-Base class used to define DBWrap tests.
-
-@author Joe Maguire
-@author Matt Seal
-'''
 class DBWrapTest(object):
+    '''
+    Base class used to define DBWrap tests.
+    
+    @author Joe Maguire
+    @author Matt Seal
+    '''
     def setUp(self):
         self.datadir = os.path.join(dirname(__file__), 'fileDB')
         if not os.path.exists(self.datadir):
@@ -151,38 +149,37 @@ class DBWrapTest(object):
             self.testDict.syncWrites()
 
     def testWriteFlush(self):
-            # Flush then check values
-            self.testDict.syncWrites()
-            result = 0
-            for i in range(20):
-                if self.testDict[str(i)] == i:
-                    result += 1
-            self.assertEqual(result,self.size)
-            # Edit values, flush then check
-            for i in range(20):
-                    self.testDict[str(i)] *= 2
-            self.testDict.syncWrites()
-            result = 0
-            for i in range(20):
-                if(self.testDict[str(i)] ==  i*2):
-                    result += 1
-            self.assertEqual(len(self.testDict),result)    
-            self.testDict.syncWrites()
+        # Flush then check values
+        self.testDict.syncWrites()
+        result = 0
+        for i in range(20):
+            if self.testDict[str(i)] == i:
+                result += 1
+        self.assertEqual(result,self.size)
+        # Edit values, flush then check
+        for i in range(20):
+                self.testDict[str(i)] *= 2
+        self.testDict.syncWrites()
+        result = 0
+        for i in range(20):
+            if(self.testDict[str(i)] ==  i*2):
+                result += 1
+        self.assertEqual(len(self.testDict),result)    
+        self.testDict.syncWrites()
     
     def testWriteToReadOnly(self):
-        prevent_write = False
         # Attempt to write to read only
         self.testDict.reopen(readOnly = True)
         self.assertRaises(AttributeError, self.testDict.__setitem__, '0', 7)
         self.testDict.syncWrites()
 
-'''
-Tests MemFromFileDict basic functionality.
-
-@author Joe Maguire
-@author Matt Seal
-'''
 class MemFromFileTest(DBWrapTest, unittest.TestCase):
+    '''
+    Tests MemFromFileDict basic functionality.
+    
+    @author Joe Maguire
+    @author Matt Seal
+    '''
     def createDictionary(self):
         return filedbwrap.MemFromFileDict(os.path.join(self.datadir, '01'),
                                           readOnly=False,
@@ -192,13 +189,13 @@ class MemFromFileTest(DBWrapTest, unittest.TestCase):
     def clearCache(self):
         return False
      
-'''
-Tests FileDict basic functionality.
-
-@author Joe Maguire
-@author Matt Seal
-'''
 class FileTest(DBWrapTest, unittest.TestCase):
+    '''
+    Tests FileDict basic functionality.
+    
+    @author Joe Maguire
+    @author Matt Seal
+    '''
     def createDictionary(self):
         return filedbwrap.FileDict(os.path.join(self.datadir, '02'),
                                    readOnly=False,
@@ -208,13 +205,13 @@ class FileTest(DBWrapTest, unittest.TestCase):
     def clearCache(self):
         return False   
     
-'''
-Tests SplitFileDict basic functionality.
-
-@author Joe Maguire
-@author Matt Seal
-'''
 class SplitFileTest(DBWrapTest, unittest.TestCase):
+    '''
+    Tests SplitFileDict basic functionality.
+    
+    @author Joe Maguire
+    @author Matt Seal
+    '''
     def createDictionary(self):
         return filedbwrap.SplitFileDict(os.path.join(self.datadir, '03'),
                                         splitKeys=tuple(getBaseAlphabet()),
@@ -226,13 +223,13 @@ class SplitFileTest(DBWrapTest, unittest.TestCase):
     def clearCache(self):
         return False 
     
-'''
-Tests MemFromFileDict with 0 size cache.
-
-@author Joe Maguire
-@author Matt Seal
-'''
 class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
+    '''
+    Tests MemFromFileDict with 0 size cache.
+    
+    @author Joe Maguire
+    @author Matt Seal
+    '''
     def createDictionary(self):
         return filedbwrap.MemFromFileDict(os.path.join(self.datadir, '01'),
                                           readOnly=False,
@@ -243,13 +240,13 @@ class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
     def clearCache(self):
         return False
      
-'''
-Tests FileDict with 0 size cache.
-
-@author Joe Maguire
-@author Matt Seal
-'''
 class FileTestCacheZero(DBWrapTest, unittest.TestCase):
+    '''
+    Tests FileDict with 0 size cache.
+    
+    @author Joe Maguire
+    @author Matt Seal
+    '''
     def createDictionary(self):
         return filedbwrap.FileDict(os.path.join(self.datadir, '02'),
                                    readOnly=False,
@@ -260,13 +257,13 @@ class FileTestCacheZero(DBWrapTest, unittest.TestCase):
     def clearCache(self):
         return False   
     
-'''
-Tests SplitFileDict with 0 size cache.
-
-@author Joe Maguire
-@author Matt Seal
-'''
 class SplitFileTestCacheZero(DBWrapTest, unittest.TestCase):
+    '''
+    Tests SplitFileDict with 0 size cache.
+    
+    @author Joe Maguire
+    @author Matt Seal
+    '''
     def createDictionary(self):
         return filedbwrap.SplitFileDict(os.path.join(self.datadir, '03'),
                                   splitKeys=tuple(getBaseAlphabet()),

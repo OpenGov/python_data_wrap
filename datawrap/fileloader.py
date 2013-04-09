@@ -1,28 +1,26 @@
 import csv, re, os
 
-'''
-Gets the extension from a file name
-'''
 def getExtension(filename):
+    '''Gets the extension from a file name'''
     name, extension = os.path.splitext(filename)
     return extension[1:]
 
-'''
-Loads arbitrary data from a specified file. The data is
-returned as a list of lines unless the delimiter is 
-specified or the file extension is a csv, in which case 
-a list of lists of tokens is returned. Each sublist of
-tokens represents a single line.
-
-Return Format:
-    list[ ('line as string' or 'list[ tokens ]') ]
-    
-@param filename The filename being requested for loading
-@param filedir The directory of the file (optional)
-@param delimiter The delimiter to split lines (default ',' for csv)
-@author Matt Seal
-'''
 class FileDataLoader(object):
+    '''
+    Loads arbitrary data from a specified file. The data is
+    returned as a list of lines unless the delimiter is 
+    specified or the file extension is a csv, in which case 
+    a list of lists of tokens is returned. Each sublist of
+    tokens represents a single line.
+    
+    Return Format:
+        list[ ('line as string' or 'list[ tokens ]') ]
+        
+    @param filename The filename being requested for loading
+    @param filedir The directory of the file (optional)
+    @param delimiter The delimiter to split lines (default ',' for csv)
+    @author Matt Seal
+    '''
     def __init__(self, filename, filedir='', delimiter=None):
         self.filename = filename
         self.filedir = filedir
@@ -60,24 +58,24 @@ class FileDataLoader(object):
         else:
             return self._loadRaw()
         
-    '''
-    Either grab our reader's iterator, or load the data
-    and return that iterator (if we're not in a with block).
-    '''
     def __iter__(self):
+        '''
+        Either grab our reader's iterator, or load the data
+        and return that iterator (if we're not in a with block).
+        '''
         if self._reader != None:
             return self._reader.__iter__()
         else:
             return self.loadData().__iter__()
     
-    '''
-    Used to safely access the data via 'with' statements.
-    Once inside the block the iterator will perform lazy
-    loading on each line of the data.
-    
-    The file will be safely closed on exit from this block.
-    '''
     def __enter__(self):
+        '''
+        Used to safely access the data via 'with' statements.
+        Once inside the block the iterator will perform lazy
+        loading on each line of the data.
+        
+        The file will be safely closed on exit from this block.
+        '''
         fullname = self._getFullPath()
         # Open file gingerly
         try:

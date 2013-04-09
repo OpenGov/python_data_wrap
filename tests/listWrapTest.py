@@ -3,13 +3,13 @@ import tests
 from datawrap import listwrap
 import unittest
 
-'''
-Performs an exhaustive test suite on the ListWrap
-class.
-
-@author Matt Seal
-'''
 class ListWrapTest(unittest.TestCase):
+    '''
+    Performs an exhaustive test suite on the ListWrap
+    class.
+    
+    @author Matt Seal
+    '''
     def testNonStrLen(self):
         testItem = []
         self.assertEqual(listwrap.nonStrLen(testItem), 0)
@@ -304,12 +304,12 @@ class ListWrapTest(unittest.TestCase):
         for elem,match in zip(wrap, range(1,11,6)):
             self.assertEqual(match, elem)
             
-    '''
-    This is a difficult test with many dimensions. The 
-    subindices and subsplices should all behave like
-    normal multi-dimension lists.
-    '''
     def testListSubsetSubSlices(self):
+        '''
+        This is a difficult test with many dimensions. The 
+        subindices and subsplices should all behave like
+        normal multi-dimension lists.
+        '''
         test = [[1,2,3,4,5,6,7,8], [5,4,3,2,1,0]]
         wrap = listwrap.FixedListSubset(test)
         self.assertEqual(wrap[0, 0], 1)

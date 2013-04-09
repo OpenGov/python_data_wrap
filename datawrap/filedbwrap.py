@@ -1,35 +1,35 @@
 import collections, shelve, os
 
-'''
-Helper function for all file wrappers to identify
-standard extension.
-'''
 def getDefaultFileExt():
+    '''
+    Helper function for all file wrappers to identify
+    standard extension.
+    '''
     return "fd"
 
-'''
-An unordered block cache with full reject upon overflow. Since
-LRU style caches require much more overhead in software over
-hardware, this naive block rejection is one of the fastest solutions.
-
-The Cache is constructed with a database object behind it so that
-missed requests fall through to the full database. Thus this object
-wraps the full database as a cached database.
-
-The database must implement __getitem__, __setitem__, __iter__, 
-__len__, __contains__, __delitem__ and (optional) close.
-
-Cache Size is defined as number of elements, not size of elements,
-so caches with many large elements might take more memory than 
-expected.
-
-NOTE: Pushing None values into the dictionary will cause an exception
-and getting an item with None value is considered to be an entry for
-no item present.
-
-@author Matt Seal
-'''
 class UnorderedCachedDict(collections.MutableMapping):
+    '''
+    An unordered block cache with full reject upon overflow. Since
+    LRU style caches require much more overhead in software over
+    hardware, this naive block rejection is one of the fastest solutions.
+    
+    The Cache is constructed with a database object behind it so that
+    missed requests fall through to the full database. Thus this object
+    wraps the full database as a cached database.
+    
+    The database must implement __getitem__, __setitem__, __iter__, 
+    __len__, __contains__, __delitem__ and (optional) close.
+    
+    Cache Size is defined as number of elements, not size of elements,
+    so caches with many large elements might take more memory than 
+    expected.
+    
+    NOTE: Pushing None values into the dictionary will cause an exception
+    and getting an item with None value is considered to be an entry for
+    no item present.
+    
+    @author Matt Seal
+    '''
     def __init__(self, database, cacheSize, readOnly=False, 
                  immutableVals=False, stringifyKeys=False,
                  cacheMisses=True, databaseDefaultFunc=None,
@@ -88,18 +88,18 @@ class UnorderedCachedDict(collections.MutableMapping):
             else:
                 self.syncCache()
     
-    '''
-    Gets the cache as a stand-alone object -- updates
-    directly to this cache will not be reflected/registered 
-    with the core database.
-    '''
     def getCache(self):
+        '''
+        Gets the cache as a stand-alone object -- updates
+        directly to this cache will not be reflected/registered 
+        with the core database.
+        '''
         return self._cache
     
-    '''
-    Checks cache for entry, then database for entry.
-    '''
     def __getitem__(self, key):
+        '''
+        Checks cache for entry, then database for entry.
+        '''
         val = None
         if key != None and self.stringifyKeys:
             key = str(key)
@@ -123,14 +123,14 @@ class UnorderedCachedDict(collections.MutableMapping):
         self.syncWrites()
         return self._database.__iter__()
     
-    '''
-    Does an insert into the cache such that the cache
-    will have an updated entry for the key,value,read
-    tuple. Any changes to those values will both update
-    the local cache and queue any required writes to the
-    database.
-    '''
     def _insertCache(self, key, val, read):
+        '''
+        Does an insert into the cache such that the cache
+        will have an updated entry for the key,value,read
+        tuple. Any changes to those values will both update
+        the local cache and queue any required writes to the
+        database.
+        '''
         if key != None and self.stringifyKeys:
             key = str(key)
         cval = self._cache.get(key)
@@ -143,19 +143,19 @@ class UnorderedCachedDict(collections.MutableMapping):
             if not self.readOnly and (not self._immutableVals or not read):
                 self._wqueue.add(key)
     
-    '''
-    This might take a very long time if the db doesn't
-    have a good __len__ implementation.
-    '''
     def __len__(self):
+        '''
+        This might take a very long time if the db doesn't
+        have a good __len__ implementation.
+        '''
         # Need to sync before we know our true size
         self.syncWrites()
         return len(self._database)
     
-    '''
-    Checks cache for entry, then database for entry.
-    '''
     def __contains__(self, key):
+        '''
+        Checks cache for entry, then database for entry.
+        '''
         if key != None and self.stringifyKeys:
             key = str(key)
         try:
@@ -183,10 +183,10 @@ class UnorderedCachedDict(collections.MutableMapping):
         self._insertCache(key, val, False)
         self._checkCacheSize()
            
-    '''
-    Deletes from both the cache, write queues and the database
-    ''' 
     def __delitem__(self, key):
+        '''
+        Deletes from both the cache, write queues and the database
+        ''' 
         if self.readOnly:
             raise AttributeError("Attempted to delete in readOnly mode")
         if key != None and self.stringifyKeys:
@@ -202,10 +202,10 @@ class UnorderedCachedDict(collections.MutableMapping):
         if key in self._database:
             self._database.__delitem__(key)
           
-    '''
-    Flushes the write queue
-    '''  
     def syncWrites(self):
+        '''
+        Flushes the write queue
+        '''
         for key in self._wqueue:
             val = self._cache[key]
             self._database[key] = val
@@ -213,17 +213,17 @@ class UnorderedCachedDict(collections.MutableMapping):
         self._wqueue = set()
         self._database.sync()
             
-    '''
-    Flushes the write queue to the database
-    '''
     def syncCache(self):
+        '''
+        Flushes the write queue to the database
+        '''
         self.syncWrites()
         self.dropCache()
         
-    '''
-    Drops all changes in the cache
-    '''
     def dropCache(self):
+        '''
+        Drops all changes in the cache
+        '''
         del self._cache
         self._cache  = {}
         del self._wqueue
@@ -243,15 +243,15 @@ class UnorderedCachedDict(collections.MutableMapping):
         # Close if we're being collected
         self.close()
         
-'''
-Acts much like an UnorderedCachedDict except it stores key existence
-instead of key value pairs. Thus the data is still stored in the
-database as a dictionary, but treated as a set on the external
-interface.
-
-@author Matt Seal
-'''
 class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
+    '''
+    Acts much like an UnorderedCachedDict except it stores key existence
+    instead of key value pairs. Thus the data is still stored in the
+    database as a dictionary, but treated as a set on the external
+    interface.
+    
+    @author Matt Seal
+    '''
     def __init__(self, database, cacheSize, readOnly=False, cacheMisses=True, 
                  immutableVals=False, stringifyKeys=False, readPoolSize=0, **kwargs):
         UnorderedCachedDict.__init__(self, database, cacheSize=cacheSize, 
@@ -259,12 +259,12 @@ class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
                                      immutableVals=immutableVals, readPoolSize=readPoolSize, 
                                      stringifyKeys=stringifyKeys, **kwargs)
         
-    '''
-    These allow for direct access to the dictionary holding
-    the set under a different naming convention (to prevent
-    dictionary like syntax from working on external interface).
-    '''
     def _dictSet(self, key, val):
+        '''
+        These allow for direct access to the dictionary holding
+        the set under a different naming convention (to prevent
+        dictionary like syntax from working on external interface).
+        '''
         # Call UnorderedCachedDict's version of setitem since we've disabled it
         # No need to check stringifyKeys, as it will be checked in the next setitem
         UnorderedCachedDict.__setitem__(self, key, val)
@@ -286,26 +286,26 @@ class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
     def __setitem__(self, key, val):
         raise AttributeError( "'Set' object has no attribute '__setitem__'" )
     
-    '''
-    Updates the set to include all arguments passed in.
-    If the keyword argument preprocess is passed, then
-    each element is preprocessed before being added.
-    '''
     def update(self, *args, **kwargs):
+        '''
+        Updates the set to include all arguments passed in.
+        If the keyword argument preprocess is passed, then
+        each element is preprocessed before being added.
+        '''
         preprocess = kwargs.get('preprocess')
         for s in args:
             for e in s:
                 self._dictSet(preprocess(e) if preprocess else e, True)
 
-'''
-This is a standard dictionary, with some additional functions
-for syntax compatability with other DB wrappers. This is slower
-than a normal dictionary and should only be used to keep syntax
-standardized among several databases
-
-@author Matt Seal
-'''
 class MemDict(collections.MutableMapping):
+    '''
+    This is a standard dictionary, with some additional functions
+    for syntax compatability with other DB wrappers. This is slower
+    than a normal dictionary and should only be used to keep syntax
+    standardized among several databases
+    
+    @author Matt Seal
+    '''
     # Careful with changing __init__ params and forgetting them in _reinit
     def __init__(self, dbname, readOnly=False, databaseDefaultFunc=None, 
                  stringifyKeys=False, **kwargs):
@@ -413,14 +413,14 @@ class MemDict(collections.MutableMapping):
     def __del__(self):
         # Close if we're being collected
         self.close()
-    
-'''
-This wraps a standard dictionary with a file persistence that
-allows the dictionary to be reloaded and/or saved upon closing.
-
-@author Matt Seal
-'''    
+     
 class MemFromFileDict(MemDict):
+    '''
+    This wraps a standard dictionary with a file persistence that
+    allows the dictionary to be reloaded and/or saved upon closing.
+    
+    @author Matt Seal
+    '''   
     # Careful with changing __init__ params and forgetting them in _reinit
     def __init__(self, dbname, dbext=None, readOnly=False, databaseDefaultFunc=None, 
                  clear=False, stringifyKeys=False, **kwargs):
@@ -491,16 +491,16 @@ class MemFromFileDict(MemDict):
         self.syncWrites()
         self.dropCache()
 
-'''
-Defines a dictionary based on a file, with an unordered
-memory cache. The database is saved to file when the cache
-gets too large or it is synced. This allows for very large
-databases to be stored in the filesystem without consuming
-all available memory.
-
-@author Matt Seal
-'''
 class FileDict(UnorderedCachedDict):
+    '''
+    Defines a dictionary based on a file, with an unordered
+    memory cache. The database is saved to file when the cache
+    gets too large or it is synced. This allows for very large
+    databases to be stored in the filesystem without consuming
+    all available memory.
+    
+    @author Matt Seal
+    '''
     # Careful with changing __init__ params and forgetting them in _reinit
     def __init__(self, dbname, dbext=None, readOnly=False, clear=False, cacheSize=10*1024, 
                  immutableVals=False, stringifyKeys=False, cacheMisses=True,
@@ -561,12 +561,12 @@ class FileDict(UnorderedCachedDict):
             self._database.close()
         self.closed = True
         
-'''
-Much like a FileDict, except treated as a Set instead.
-
-@author Matt Seal
-'''
 class FileSet(UnorderedCachedSet):
+    '''
+    Much like a FileDict, except treated as a Set instead.
+    
+    @author Matt Seal
+    '''
     # Careful with changing __init__ params and forgetting them in reopen/clear
     def __init__(self, dbname, dbext=None, readOnly=False, clear=False, cacheSize=10*1024, 
                  immutableVals=False, stringifyKeys=False, cacheMisses=True, 
@@ -628,23 +628,23 @@ class FileSet(UnorderedCachedSet):
             self._database.close()
         self.closed = True
         
-'''
-Defines a way to split data among any number of arbitrary databases.
-All arguments in kwargs are applied to each database constructor.
-
-The default database class is baseDbClass, while key specific classes
-can be defined in keyedClasses as a dictionary input. These overwrite
-the default dbclass.
-
-If the splitFunc gives an invalid key name, a KeyError will be raised,
-so make sure updates to splitKeys also updates splitFunc.
-
-If a cacheSize if passed through kwargs, it is evenly divided among all
-databases.
-
-@author Matt Seal
-'''
 class SplitDbDict(collections.MutableMapping):
+    '''
+    Defines a way to split data among any number of arbitrary databases.
+    All arguments in kwargs are applied to each database constructor.
+    
+    The default database class is baseDbClass, while key specific classes
+    can be defined in keyedClasses as a dictionary input. These overwrite
+    the default dbclass.
+    
+    If the splitFunc gives an invalid key name, a KeyError will be raised,
+    so make sure updates to splitKeys also updates splitFunc.
+    
+    If a cacheSize if passed through kwargs, it is evenly divided among all
+    databases.
+    
+    @author Matt Seal
+    '''
     def __init__(self, dbname, baseDbClass, splitKeys, splitFunc, keyedClasses=None, 
                  stringifyKeys=False, **kwargs):
         self.stringifyKeys = stringifyKeys
@@ -705,12 +705,12 @@ class SplitDbDict(collections.MutableMapping):
         db = self._keyedDb[self.splitFunc(key)]
         return db.__getitem__(key)
     
-    '''
-    The iterator for this class wraps the iterators for
-    all stored DBs and throws the usual StopIteration()
-    exception when all iterators have been exhausted.
-    '''
     def __iter__(self):
+        '''
+        The iterator for this class wraps the iterators for
+        all stored DBs and throws the usual StopIteration()
+        exception when all iterators have been exhausted.
+        '''
         class MultiIter(object):
             def __init__(self, iterables):
                 self.iterables = [iter.__iter__() for iter in iterables]
@@ -775,23 +775,23 @@ class SplitDbDict(collections.MutableMapping):
         # Close if we're being collected
         self.close()
         
-'''
-Defines a way to split data among any number of arbitrary databases.
-All arguments in kwargs are applied to each database constructor.
-
-The default database class is baseDbClass, while key specific classes
-can be defined in keyedClasses as a dictionary input. These overwrite
-the default dbclass.
-
-If the splitFunc gives an invalid key name, a KeyError will be raised,
-so make sure updates to splitKeys also updates splitFunc.
-
-If a cacheSize if passed through kwargs, it is evenly divided among all
-databases.
-
-@author Matt Seal
-'''
 class SplitDbSet(collections.MutableSet, SplitDbDict):
+    '''
+    Defines a way to split data among any number of arbitrary databases.
+    All arguments in kwargs are applied to each database constructor.
+    
+    The default database class is baseDbClass, while key specific classes
+    can be defined in keyedClasses as a dictionary input. These overwrite
+    the default dbclass.
+    
+    If the splitFunc gives an invalid key name, a KeyError will be raised,
+    so make sure updates to splitKeys also updates splitFunc.
+    
+    If a cacheSize if passed through kwargs, it is evenly divided among all
+    databases.
+    
+    @author Matt Seal
+    '''
     def __init__(self, dbname, baseDbClass, splitKeys, splitFunc, keyedClasses=None, 
                  stringifyKeys=False, **kwargs):
         self.stringifyKeys = stringifyKeys
@@ -812,12 +812,12 @@ class SplitDbSet(collections.MutableSet, SplitDbDict):
                 dbclass = self._baseDbClass
             self._keyedDb[skey] = dbclass(self._dbname+'_'+str(skey), **kwargs)
             
-    '''
-    These allow for direct access to the dictionary holding
-    the set under a different naming convention (to prevent
-    dictionary like syntax from working on external interface).
-    '''
     def _dictSet(self, key, val):
+        '''
+        These allow for direct access to the dictionary holding
+        the set under a different naming convention (to prevent
+        dictionary like syntax from working on external interface).
+        '''
         if key != None and self.stringifyKeys:
             key = str(key)
         db = self._keyedDb[self.splitFunc(key)]
@@ -841,25 +841,25 @@ class SplitDbSet(collections.MutableSet, SplitDbDict):
     def __setitem__(self, key, val):
         raise AttributeError( "'Set' object has no attribute '__setitem__'" )
     
-    '''
-    Updates the set to include all arguments passed in.
-    If the keyword argument preprocess is passed, then
-    each element is preprocessed before being added.
-    '''
     def update(self, *args, **kwargs):
+        '''
+        Updates the set to include all arguments passed in.
+        If the keyword argument preprocess is passed, then
+        each element is preprocessed before being added.
+        '''
         preprocess = kwargs.get('preprocess')
         for s in args:
             for e in s:
                 self._dictSet(preprocess(e) if preprocess else e, True)
         
-'''
-Defines a split DB (see SplitDbDict) based on separate files.
-This is useful if you have a large dictionary of words and want
-to store all words with the same first character together.
-
-@author Matt Seal
-'''
 class SplitFileDict(SplitDbDict):
+    '''
+    Defines a split DB (see SplitDbDict) based on separate files.
+    This is useful if you have a large dictionary of words and want
+    to store all words with the same first character together.
+    
+    @author Matt Seal
+    '''
     def __init__(self, dbname, splitKeys, splitFunc, dbext=None, readOnly=False, 
                  clear=False, cacheMisses=True, cacheSize=10*1024, immutableVals=False, 
                  stringifyKeys=False, databaseDefaultFunc=None, **kwargs):
@@ -869,12 +869,12 @@ class SplitFileDict(SplitDbDict):
                              databaseDefaultFunc=databaseDefaultFunc, 
                              cacheMisses=cacheMisses, **kwargs)
         
-'''
-Much like a SplitFileDict, except treated as a Set instead.
-
-@author Matt Seal
-'''
 class SplitFileSet(SplitDbSet):
+    '''
+    Much like a SplitFileDict, except treated as a Set instead.
+    
+    @author Matt Seal
+    '''
     def __init__(self, dbname, splitKeys, splitFunc, dbext=None, readOnly=False, 
                  clear=False, cacheMisses=True, cacheSize=10*1024, immutableVals=False, 
                  stringifyKeys=False, **kwargs):

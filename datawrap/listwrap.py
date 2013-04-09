@@ -1,37 +1,37 @@
 import collections
 
-'''
-Helper function for checking non-string item length
-'''
 def nonStrLen(item):
+    '''
+    Helper function for checking non-string item length
+    '''
     if isinstance(item, basestring):
         raise TypeError()
     return len(item)
 
-'''
-Helper function for determining if object has __len__ defined
-'''
 def hasLen(item):
+    '''
+    Helper function for determining if object has __len__ defined
+    '''
     try:
         len(item)
         return True
     except:
         return False
 
-'''
-Helper function for checking non-string item length.
-Returns None on failure instead of throwing a TypeError.
-'''
 def nonStrLenNoThrow(item):
+    '''
+    Helper function for checking non-string item length.
+    Returns None on failure instead of throwing a TypeError.
+    '''
     try:
         return nonStrLen(item)
     except TypeError:
         return 0
     
-'''
-Converts negative indices to positive ones
-'''
 def getNonNegativeIndex(index, length):
+    '''
+    Converts negative indices to positive ones
+    '''
     while index < 0:
         # Catch the 0 length case
         if length > 0:
@@ -40,39 +40,39 @@ def getNonNegativeIndex(index, length):
             index = 0
     return index
 
-'''
-Checks if a particular key is a slice or DimensionRange
-'''
 def isSliceOrDimRange(key):
+    '''
+    Checks if a particular key is a slice or DimensionRange
+    '''
     return isinstance(key, (slice, DimensionRange))
 
-'''
-Checks if a particular key is a slice, DimensionRange or
-list of those types
-'''
 def isSliceOrDimRangeRequest(key, depth=0):
+    '''
+    Checks if a particular key is a slice, DimensionRange or
+    list of those types
+    '''
     # Slice, DimensionRange, or list of those elements
     return (isSliceOrDimRange(key) or
             # Don't check more than the first depth
             (depth == 0 and nonStrLenNoThrow(key) > 0 and 
              all(isSliceOrDimRangeRequest(subkey, depth+1) for subkey in key)))
 
-'''
-Converts negative indicies to positive ones and
-indicies above length to length or length-1 depending
-on lengthAllowed.
-'''
 def getRestrictedIndex(index, length, lengthIndexAllowed=True):
+    '''
+    Converts negative indicies to positive ones and
+    indicies above length to length or length-1 depending
+    on lengthAllowed.
+    '''
     if index and index >= length:
         index = length if lengthIndexAllowed else length-1
     return getNonNegativeIndex(index, length)
 
-'''
-Converts various size tuples or slices representing 
-data ranges returns a new slice with all non-negative 
-(or None) values.
-'''
 def getTrueSlice(dims, dataLen):
+    '''
+    Converts various size tuples or slices representing 
+    data ranges returns a new slice with all non-negative 
+    (or None) values.
+    '''
     rangeLen = nonStrLenNoThrow(dims)
     
     # Get the range qualifier for length
@@ -105,27 +105,27 @@ def getTrueSlice(dims, dataLen):
         
     return slice(start, stop, step)
 
-'''
-Defines an ordered set of dimensions. These can be used to scope
-and select subsets of data. These act much the same as slices
-in standard list operators but can be combined easily and have
-an application for a depth of dimensions.
-
-@param orderedRanges The arguments which provide the ordered 
-                     restrictions at each sub-dimension. 
-@author Matt Seal
-'''
 class DimensionRange(collections.MutableMapping):
+    '''
+    Defines an ordered set of dimensions. These can be used to scope
+    and select subsets of data. These act much the same as slices
+    in standard list operators but can be combined easily and have
+    an application for a depth of dimensions.
+    
+    @param orderedRanges The arguments which provide the ordered 
+                         restrictions at each sub-dimension. 
+    @author Matt Seal
+    '''
     def __init__(self, *orderedRanges):
         self.orderedRanges = []
         for rangeRestriction in orderedRanges:
             self.addRange(rangeRestriction)
             
-    '''
-    Creates a new DimensionRange object with other
-    concatenated to the end of the range specifications.
-    '''
     def __add__(self, other):
+        '''
+        Creates a new DimensionRange object with other
+        concatenated to the end of the range specifications.
+        '''
         if isinstance(other, DimensionRange):
             return DimensionRange(self, other)
         else:
@@ -134,20 +134,18 @@ class DimensionRange(collections.MutableMapping):
     def __iadd__(self, other):
         self.__init__(self + other)
         
-    '''
-    Same as __add__(self, other)
-    '''
     def getCombinedDimensionRange(self, other):
+        '''Same as __add__(self, other)'''
         return self + other
             
-    '''
-    Returns a slice representing the dimension range
-    restrictions applied to a list of length dataLen.
-    
-    If addSlices contains additional slice requirements,
-    they are processed in the order they are given.
-    '''
     def sliceOnLength(self, dataLen, *addSlices):
+        '''
+        Returns a slice representing the dimension range
+        restrictions applied to a list of length dataLen.
+        
+        If addSlices contains additional slice requirements,
+        they are processed in the order they are given.
+        '''
         if len(self.orderedRanges) + len(addSlices) == 0:
             return slice(None,None,None)
         ranges = self.orderedRanges
@@ -155,11 +153,11 @@ class DimensionRange(collections.MutableMapping):
             ranges = ranges + DimensionRange(*addSlices).orderedRanges
         return self._combineListsOfRangesOnLength(dataLen, *ranges)
         
-    '''
-    Combines a first range with a second range, where the second
-    range is considered within the scope of the first.
-    '''
     def _combineRangesOnLength(self, dataLen, first, second):
+        '''
+        Combines a first range with a second range, where the second
+        range is considered within the scope of the first.
+        '''
         first = getTrueSlice(first, dataLen)
         second = getTrueSlice(second, dataLen)
         finalStart, finalStep, finalStop = (None, None, None)
@@ -190,10 +188,10 @@ class DimensionRange(collections.MutableMapping):
         
         return slice(finalStart, finalStop, finalStep)
         
-    '''
-    Combines an arbitrary length list of ranges into a single slice
-    '''
     def _combineListsOfRangesOnLength(self, dataLen, first, *rangelist):
+        '''
+        Combines an arbitrary length list of ranges into a single slice
+        '''
         currentrange = first
         for nextrange in rangelist:
             currentrange = self._combineRangesOnLength(dataLen, currentrange, nextrange)
@@ -243,16 +241,16 @@ class DimensionRange(collections.MutableMapping):
     def __iter__(self):
         return self.orderedRanges.__iter__()
 
-'''
-Defines an iterator that relies on an object's __getitem__ 
-call to walk through all elements in the data object by 
-index. This is useful for wrapper on datasets, which return 
-new objects at each index, rather than an underlying 
-database's raw information.
-
-@author Matt Seal
-'''
 class ListIter(object):
+    '''
+    Defines an iterator that relies on an object's __getitem__ 
+    call to walk through all elements in the data object by 
+    index. This is useful for wrapper on datasets, which return 
+    new objects at each index, rather than an underlying 
+    database's raw information.
+    
+    @author Matt Seal
+    '''
     def __init__(self, iterable):
         self.data = iterable
         self._cursor = xrange(len(self.data)).__iter__()
@@ -263,33 +261,33 @@ class ListIter(object):
     def next(self):
         return self.data[self._cursor.next()]
     
-'''
-Wraps list-style data with an iterator and getters 
-which only return a subset of the original data.
-
-FixedListSubset([(1,2,3), (4,5,6)], 2) would effectively
-represent the list [2, 5]
-
-FixedListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
-
-dataRange of 0 on a non-iterable sublists will
-return the non-iterable element as though it were
-a tuple of one element.
-
-@param data Fixed length list of arbitrary data
-@param dimensionRanges An arbitrary number of dimension
-                       restrictions that are combined to
-                       form the subset.
-@author Matt Seal
-'''
 class FixedListSubset(collections.Sequence):
     '''
-    Assumes data is of fixed length.
-    The parameter dataRange can be an Integer or
-    a tuple of Integers (or None for full range)
-    representing the sub
+    Wraps list-style data with an iterator and getters 
+    which only return a subset of the original data.
+    
+    FixedListSubset([(1,2,3), (4,5,6)], 2) would effectively
+    represent the list [2, 5]
+    
+    FixedListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
+    
+    dataRange of 0 on a non-iterable sublists will
+    return the non-iterable element as though it were
+    a tuple of one element.
+    
+    @param data Fixed length list of arbitrary data
+    @param dimensionRanges An arbitrary number of dimension
+                           restrictions that are combined to
+                           form the subset.
+    @author Matt Seal
     '''
     def __init__(self, data, *dimensionRanges):
+        '''
+        Assumes data is of fixed length.
+        The parameter dataRange can be an Integer or
+        a tuple of Integers (or None for full range)
+        representing the sub
+        '''
         # Used later for constructing new FixedLists, this
         # can be replaced by subclasses that want to create
         # a new type of list when returning sublists.
@@ -356,11 +354,11 @@ class FixedListSubset(collections.Sequence):
             
         return constructedDims
     
-    '''
-    Helper method for determining how many single
-    index entries there are in a particular multi-index
-    '''
     def _getSingleDepth(self, multiIndex):
+        '''
+        Helper method for determining how many single
+        index entries there are in a particular multi-index
+        '''
         singleDepth = 0
         for subind in multiIndex:
             if isSliceOrDimRange(subind):
@@ -368,11 +366,11 @@ class FixedListSubset(collections.Sequence):
             singleDepth += 1
         return singleDepth
     
-    '''
-    Helper function which implements multi index requests
-    for __getitem__
-    '''
     def _getSliceRequestData(self, index):
+        '''
+        Helper function which implements multi index requests
+        for __getitem__
+        '''
         # Do a check on list indices for early error detection
         if not isSliceOrDimRange(index):
             singleDepth = self._getSingleDepth(index)
@@ -396,11 +394,11 @@ class FixedListSubset(collections.Sequence):
         newDimRanges = self._combineDimensionLists(self._dimRanges, index)
         return self.builder(self._data, *newDimRanges)
     
-    '''
-    Helper function which implements single index requests
-    for __getitem__
-    '''
     def _getSingleIndexRequest(self, index, setToValue=False, value=None):
+        '''
+        Helper function which implements single index requests
+        for __getitem__
+        '''
         adjustedIndex = index
         # Multiply by step length
         if self.range.step:
@@ -437,13 +435,13 @@ class FixedListSubset(collections.Sequence):
                 self._data[adjustedIndex] = value
             return elem
         
-    '''
-    Handles an arbitrary number of dimensional definitions as
-    well as the standard index requests. This getter can be
-    treated as a list and will return the correct object or
-    object wrapper for a particular index request.
-    '''
     def __getitem__(self, index):
+        '''
+        Handles an arbitrary number of dimensional definitions as
+        well as the standard index requests. This getter can be
+        treated as a list and will return the correct object or
+        object wrapper for a particular index request.
+        '''
         # Check if we have a list of dimensions or a slice request
         if nonStrLenNoThrow(index) > 0 or isSliceOrDimRange(index):
             return self._getSliceRequestData(index)
@@ -451,36 +449,29 @@ class FixedListSubset(collections.Sequence):
         else:
             return self._getSingleIndexRequest(index)
     
-    '''
-    Default iterator doesn't work
-    '''
     def __iter__(self):
+        # Default iterator doesn't work
         return ListIter(self)
     
-    
-    '''
-    This can be expensive for high dimension lists.
-    '''
     def __str__(self):
+        # This can be expensive for high dimension lists.
         if self._length <= 100:
             return str(self.compressRangesToLists())
         else:
             listString = str(self[:100].compressRangesToLists())
             return listString[:-1] + ", ... ]"
         
-    '''
-    This can be expensive for high dimension lists.
-    '''
     def __repr__(self):
+        # This can be expensive for high dimension lists.
         return repr(self.compressRangesToLists())
     
-    '''
-    Converts the internal dimension ranges on lists into
-    list of the restricted size. Thus all dimension rules
-    are applied to all dimensions of the list wrapper
-    and returned as a list (of lists).
-    '''
     def compressRangesToLists(self):
+        '''
+        Converts the internal dimension ranges on lists into
+        list of the restricted size. Thus all dimension rules
+        are applied to all dimensions of the list wrapper
+        and returned as a list (of lists).
+        '''
         clist = []
         for elem in self:
             if isinstance(elem, FixedListSubset):
@@ -512,32 +503,32 @@ class FixedListSubset(collections.Sequence):
     def __deepcopy__(self, memo):
         return self.builder(self.deepCopyAsList(memo))
     
-'''
-Wraps list-style data with an iterator and getters 
-which only return a subset of the original data. This
-class is much like FixedListSubset, except you can set
-the value of elements at a specific index. If you replace
-a dimensional element (i.e. the first dimension of a 2D
-table) you can break the object's logic if the new element
-is not the same size/dimensionality. For this reason this
-class is separate from FixedListSubset.
-
-MutableListSubset([(1,2,3), (4,5,6)], 2) would effectively
-represent the list [2, 5]
-
-MutableListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
-
-dataRange of 0 on a non-iterable sublists will
-return the non-iterable element as though it were
-a tuple of one element.
-
-@param data Fixed length list of arbitrary data
-@param dimensionRanges An arbitrary number of dimension
-                       restrictions that are combined to
-                       form the subset.
-@author Matt Seal
-'''
 class MutableListSubset(collections.MutableSequence, FixedListSubset):
+    '''
+    Wraps list-style data with an iterator and getters 
+    which only return a subset of the original data. This
+    class is much like FixedListSubset, except you can set
+    the value of elements at a specific index. If you replace
+    a dimensional element (i.e. the first dimension of a 2D
+    table) you can break the object's logic if the new element
+    is not the same size/dimensionality. For this reason this
+    class is separate from FixedListSubset.
+    
+    MutableListSubset([(1,2,3), (4,5,6)], 2) would effectively
+    represent the list [2, 5]
+    
+    MutableListSubset([(1,2,3), (4,5,6)], (1,3)) => [(1,2), (4,5)]
+    
+    dataRange of 0 on a non-iterable sublists will
+    return the non-iterable element as though it were
+    a tuple of one element.
+    
+    @param data Fixed length list of arbitrary data
+    @param dimensionRanges An arbitrary number of dimension
+                           restrictions that are combined to
+                           form the subset.
+    @author Matt Seal
+    '''
     def __setitem__(self, index, value):
         self._getSingleIndexRequest(index, True, value)
     
@@ -547,26 +538,26 @@ class MutableListSubset(collections.MutableSequence, FixedListSubset):
     def __delitem__(self, index):
         raise NotImplementedError("Cannot delete from a List Subset")
     
-'''
-A constant list of zeros with fixed memory footprint. 
-This is useful for passing a placeholder instead of
-a real list, especially when the length could be very
-large.
-
-@param length The number of 'zeros' this list represents
-@author Matt Seal
-'''
 class ZeroList(collections.Sequence):
+    '''
+    A constant list of zeros with fixed memory footprint. 
+    This is useful for passing a placeholder instead of
+    a real list, especially when the length could be very
+    large.
+    
+    @param length The number of 'zeros' this list represents
+    @author Matt Seal
+    '''
     def __init__(self, length):
         self._length = length
         
     def __len__(self):
         return self._length
     
-    '''
-    Creates a splice size version of the ZeroList
-    '''
     def _generateSplice(self, sliceInd):
+        '''
+        Creates a splice size version of the ZeroList
+        '''
         stepsize = sliceInd.step if sliceInd.step else 1
         # Check for each of the four possible scenarios
         if sliceInd.start != None:

@@ -4,6 +4,11 @@ from datawrap import tablewrap
 import unittest
 
 class TableWrapTest(unittest.TestCase):
+    '''
+    Tests the capability to wrap 2D objects in Tables and transpose them.
+    
+    @author Matt Seal
+    '''
     def setUp(self):
         # self.table doesn't need the tablewrap.Table object to work
         # but this tests both wrappers at once
