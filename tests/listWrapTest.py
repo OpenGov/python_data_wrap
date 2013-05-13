@@ -1,5 +1,5 @@
-# This import triggers the __init__.py code regardless of how this file is called
-import tests
+# This import fixes sys.path issues
+import bootstrap
 from datawrap import listwrap
 import unittest
 

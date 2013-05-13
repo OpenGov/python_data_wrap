@@ -7,8 +7,8 @@ changes could disrupt these.
 @author Matt Seal
 '''
 
-# This import triggers the __init__.py code regardless of how this file is called
-import tests
+# This import fixes sys.path issues
+import bootstrap
 from datawrap import filedbwrap
 import unittest
 import os
