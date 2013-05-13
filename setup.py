@@ -21,5 +21,6 @@ setup(
     description = ("Tools for wrapping data and manipulating it in efficient ways"),
     install_requires=['xlrd'],
     packages=['datawrap'],
+    test_suite = 'tests',
     long_description=read('README.md'),
 )
