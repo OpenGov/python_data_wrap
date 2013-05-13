@@ -6,8 +6,9 @@ from setuptools import setup
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+# Cleanup builds so changes don't persist into setup
 builddir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'build'))
-distdir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'build'))
+distdir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dist'))
 if (os.path.isdir(builddir)):
     shutil.rmtree(builddir)
 if (os.path.isdir(distdir)):
