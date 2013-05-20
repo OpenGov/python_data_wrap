@@ -23,5 +23,6 @@ setup(
     install_requires=['xlrd'],
     packages=['datawrap'],
     test_suite = 'tests',
+    zip_safe = False,
     long_description=read('README.md'),
 )
