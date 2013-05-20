@@ -1,7 +1,6 @@
 # This import fixes sys.path issues
 import bootstrap
 from datawrap import tableloader
-import hashlib
 import csv
 import unittest
 import os
