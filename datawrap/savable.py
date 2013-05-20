@@ -2,21 +2,18 @@ import filedbwrap
 
 class AttributeSavable(object):
     '''
-    Defines a object which can save attributes to a file and
-    load those attributes upon initialization. This allows
-    for easy persistent storing of object characteristics.
+    Defines a object which can save attributes to a file and load those attributes 
+    upon initialization. This allows for easy persistent storing of object 
+    characteristics.
     
-    @param filename The filename used to store the attributes
-                    without an extension.
-    @param attributes An iterable of all the attributes from
-                      attrObj to be saved.
-    @param dbext The extension on the filename to be used
-                 (default filedbwrap.getDefaultFileExt()).
-    @param attrObj The object whose attributes are being saved
-                   (default self -- inheritance assumed).
-    @param readOnly Determines if settings are saved on 
-                    deconstruction / saveAttributes().
-    @author Matt Seal
+    Args:
+        filename: The filename used to store the attributes without an extension.
+        attributes: An iterable of all the attributes from attrObj to be saved.
+        dbext: The extension on the filename to be used 
+            (default filedbwrap.getDefaultFileExt()).
+        attrObj: The object whose attributes are being saved.
+            (default self -- inheritance assumed).
+        readOnly: Determines if settings are saved on deconstruction/saveAttributes().
     '''
     def __init__(self, filename, attributes, dbext=None, attrObj=None, readOnly=False):
         self._filename = filename

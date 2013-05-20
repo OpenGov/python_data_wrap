@@ -5,10 +5,7 @@ import unittest
 
 class ListWrapTest(unittest.TestCase):
     '''
-    Performs an exhaustive test suite on the ListWrap
-    class.
-    
-    @author Matt Seal
+    Performs an exhaustive test suite on the ListWrap class.
     '''
     def testNonStrLen(self):
         testItem = []
@@ -109,20 +106,20 @@ class ListWrapTest(unittest.TestCase):
     
     def testListIter(self):
         test = []
-        iter = listwrap.ListIter(test)
-        self.assertRaises(StopIteration, iter.next)
+        testiter = listwrap.ListIter(test)
+        self.assertRaises(StopIteration, testiter.next)
         # Check that it iterates in the correct order
         test = [1,2,3,4,5,6]
         count = 0
-        iter = listwrap.ListIter(test)
-        for i,val in enumerate(iter):
+        testiter = listwrap.ListIter(test)
+        for i,val in enumerate(testiter):
             self.assertEqual(i+1, val)
             count += 1
         # Ensure we saw all items in test
         self.assertEqual(len(test), count)
         # Check __iter__
-        iter = iter.__iter__()
-        for i,val in enumerate(iter):
+        testiter = testiter.__iter__()
+        for i,val in enumerate(testiter):
             self.assertEqual(i+1, val)
             
     def testDimensionRange(self):
@@ -306,9 +303,8 @@ class ListWrapTest(unittest.TestCase):
             
     def testListSubsetSubSlices(self):
         '''
-        This is a difficult test with many dimensions. The 
-        subindices and subsplices should all behave like
-        normal multi-dimension lists.
+        This is a difficult test with many dimensions. The subindices and 
+        subsplices should all behave like normal multi-dimension lists.
         '''
         test = [[1,2,3,4,5,6,7,8], [5,4,3,2,1,0]]
         wrap = listwrap.FixedListSubset(test)

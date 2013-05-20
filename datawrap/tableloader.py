@@ -15,11 +15,11 @@ def read(filename, filecontents=None):
     a list of 2D tables. For csv files this will be a list of one table,
     but excel formats can have many tables/worksheets.
     
-    @param filename The name of the local file, or the holder for the
-                    extension type when the filecontents are supplied.
-    @param filecontents The file-like object holding contents of filename.
-                        If left as None, then filename is directly loaded.
-    @author Matt Seal
+    Args:
+        filename: The name of the local file, or the holder for the 
+            extension type when the filecontents are supplied.
+        filecontents: The file-like object holding contents of filename.
+            If left as None, then filename is directly loaded.
     '''
     if re.search(xlsxExtRegex, filename):
         return getDataXlsx(filename, filecontents=filecontents)
@@ -38,11 +38,11 @@ def getDataXlsx(filename, filecontents=None):
     Loads the new excel format files. Old format files will automatically
     get loaded as well.
     
-    @param filename The name of the local file, or the holder for the
-                    extension type when the filecontents are supplied.
-    @param filecontents The file-like object holding contents of filename.
-                        If left as None, then filename is directly loaded.
-    @author Matt Seal
+    Args:
+        filename: The name of the local file, or the holder for the 
+            extension type when the filecontents are supplied.
+        filecontents: The file-like object holding contents of filename.
+            If left as None, then filename is directly loaded.
     '''
     return getDataXls(filename, filecontents)
 
@@ -51,12 +51,11 @@ def getDataXls(filename, filecontents=None):
     Loads the old excel format files. New format files will automatically
     get loaded as well.
     
-    @param filename The name of the local file, or the holder for the
-                    extension type when the filecontents are supplied.
-    @param filecontents The file-like object holding contents of filename.
-                        If left as None, then filename is directly loaded.
-    @author Matt Seal
-    @author Joe Maguire
+    Args:
+        filename: The name of the local file, or the holder for the
+            extension type when the filecontents are supplied.
+        filecontents: The file-like object holding contents of filename.
+            If left as None, then filename is directly loaded.
     '''
     def tupledateToIsoDate(tupledate):
         '''
@@ -67,7 +66,8 @@ def getDataXls(filename, filecontents=None):
     
         Note that datetimes of midnight will come back as date-only strings.  A date
         of month=0 and day=0 is meaningless, so that part of the coercion is safe.
-        For more on the hairy nature of Excel date/times see http://www.lexicon.net/sjmachin/xlrd.html
+        For more on the hairy nature of Excel date/times see 
+        http://www.lexicon.net/sjmachin/xlrd.html
         '''
         (y,m,d, hh,mm,ss) = tupledate
         nonzero = lambda n: n!=0
@@ -77,13 +77,13 @@ def getDataXls(filename, filecontents=None):
 
     def formatExcelVal(book, val_type, value, wanttupledate):
         ''''Cleans up the incoming excel data'''
-        ##  Data val_type Codes:
-        ##  EMPTY   0
-        ##  TEXT    1 a Unicode string 
-        ##  NUMBER  2 float 
-        ##  DATE    3 float 
-        ##  BOOLEAN 4 int; 1 means TRUE, 0 means FALSE 
-        ##  ERROR   5 
+        #  Data val_type Codes:
+        #  EMPTY   0
+        #  TEXT    1 a Unicode string 
+        #  NUMBER  2 float 
+        #  DATE    3 float 
+        #  BOOLEAN 4 int; 1 means TRUE, 0 means FALSE 
+        #  ERROR   5 
         if   val_type == 2: # TEXT
             if value == int(value): value = int(value)
         elif val_type == 3: # NUMBER
@@ -95,9 +95,10 @@ def getDataXls(filename, filecontents=None):
     
     def xlrdXlsToArray(filename, filecontents=None):
         '''
-        Returns a list of sheets; each sheet is a dict containing
-        * sheet_name: unicode string naming that sheet
-        * sheet_data: 2-D table holding the converted cells of that sheet
+        Returns: 
+            A list of sheets; each sheet is a dict containing
+            { sheet_name: unicode string naming that sheet,
+              sheet_data: 2-D table holding the converted cells of that sheet }
         '''   
         book       = xlrd.open_workbook(filename, file_contents=filecontents)
         sheets     = []
@@ -122,12 +123,12 @@ def getDataCsv(filename, loadAsUnicode=True, filecontents=None):
     '''
     Gets good old csv data from a file.
     
-    @param filename The name of the local file, or the holder for the
-                    extension type when the filecontents are supplied.
-    @param loadAsUnicode Loads the file as a unicode object 
-    @param filecontents The file-like object holding contents of filename.
-                        If left as None, then filename is directly loaded.
-    @author Matt Seal
+    Args:
+        filename: The name of the local file, or the holder for the
+            extension type when the filecontents are supplied.
+        loadAsUnicode: Loads the file as a unicode object.
+        filecontents: The file-like object holding contents of filename.
+            If left as None, then filename is directly loaded.
     '''
     table = []
     
@@ -151,9 +152,9 @@ def write(data, filename):
     '''
     Writes 2D tables to file.
     
-    @param data 2D list of tables/worksheets
-    @param filename Name of the output file (determines type)
-    @author Matt Seal
+    Args:
+        data: 2D list of tables/worksheets.
+        filename: Name of the output file (determines type).
     '''
     if re.search(xlsxExtRegex, filename):
         return writeXlsx(data, filename)
@@ -168,9 +169,9 @@ def writeXlsx(data, filename):
     '''
     Writes out to new excel format.
     
-    @param data 2D list of tables/worksheets
-    @param filename Name of the output file
-    @author Matt Seal
+    Args:
+        data: 2D list of tables/worksheets.
+        filename: Name of the output file.
     '''
     raise NotImplementedError("Xlsx writing not implemented")
 
@@ -178,9 +179,9 @@ def writeXls(data, filename):
     '''
     Writes out to old excel format.
     
-    @param data 2D list of tables/worksheets
-    @param filename Name of the output file
-    @author Matt Seal
+    Args:
+        data: 2D list of tables/worksheets.
+        filename: Name of the output file.
     '''
     raise NotImplementedError("Xls writing not implemented")
  
@@ -188,9 +189,9 @@ def writeCsv(data, filename):
     '''
     Writes out to csv format.
     
-    @param data 2D list of tables/worksheets
-    @param filename Name of the output file
-    @author Matt Seal
+    Args:
+        data: 2D list of tables/worksheets.
+        filename: Name of the output file.
     '''   
     nameExtension = len(data) > 1
     root, ext = os.path.splitext(filename)

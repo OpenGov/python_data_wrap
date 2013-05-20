@@ -2,9 +2,6 @@
 NOTE this testing library needs more tests for changing
 wrapper attributes -- for now it's stable but future
 changes could disrupt these.
-
-@author Joe Maguire
-@author Matt Seal
 '''
 
 # This import fixes sys.path issues
@@ -39,9 +36,6 @@ def getBaseAlphabet():
 class DBWrapTest(object):
     '''
     Base class used to define DBWrap tests.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def setUp(self):
         self.datadir = os.path.join(dirname(__file__), 'fileDB')
@@ -176,9 +170,6 @@ class DBWrapTest(object):
 class MemFromFileTest(DBWrapTest, unittest.TestCase):
     '''
     Tests MemFromFileDict basic functionality.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def createDictionary(self):
         return filedbwrap.MemFromFileDict(os.path.join(self.datadir, '01'),
@@ -192,9 +183,6 @@ class MemFromFileTest(DBWrapTest, unittest.TestCase):
 class FileTest(DBWrapTest, unittest.TestCase):
     '''
     Tests FileDict basic functionality.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def createDictionary(self):
         return filedbwrap.FileDict(os.path.join(self.datadir, '02'),
@@ -208,9 +196,6 @@ class FileTest(DBWrapTest, unittest.TestCase):
 class SplitFileTest(DBWrapTest, unittest.TestCase):
     '''
     Tests SplitFileDict basic functionality.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def createDictionary(self):
         return filedbwrap.SplitFileDict(os.path.join(self.datadir, '03'),
@@ -226,9 +211,6 @@ class SplitFileTest(DBWrapTest, unittest.TestCase):
 class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
     '''
     Tests MemFromFileDict with 0 size cache.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def createDictionary(self):
         return filedbwrap.MemFromFileDict(os.path.join(self.datadir, '01'),
@@ -243,9 +225,6 @@ class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
 class FileTestCacheZero(DBWrapTest, unittest.TestCase):
     '''
     Tests FileDict with 0 size cache.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def createDictionary(self):
         return filedbwrap.FileDict(os.path.join(self.datadir, '02'),
@@ -260,9 +239,6 @@ class FileTestCacheZero(DBWrapTest, unittest.TestCase):
 class SplitFileTestCacheZero(DBWrapTest, unittest.TestCase):
     '''
     Tests SplitFileDict with 0 size cache.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def createDictionary(self):
         return filedbwrap.SplitFileDict(os.path.join(self.datadir, '03'),

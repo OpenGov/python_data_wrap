@@ -7,8 +7,6 @@ class KeyDefaultDictTest(unittest.TestCase):
     '''
     Performs basic keydefaultdict tests where the default function
     takes the key as an argument to generate new values.
-    
-    @author Matt Seal
     '''
     def testKeyDefaults(self):
         inputs = { k : k*2 for k in range(100)}

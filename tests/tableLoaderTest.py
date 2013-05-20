@@ -9,11 +9,7 @@ from os.path import dirname
 
 def compareToCSV(filename, array):
     '''
-    Helper function which compares the loaded data against
-    another csv
-    
-    @author Joe Maguire
-    @author Matt Seal
+    Helper function which compares the loaded data against another csv.
     '''
     with open(filename,"r") as mfile:
         master = csv.reader(mfile)
@@ -34,9 +30,6 @@ class TableLoaderTest(unittest.TestCase):
     '''
     Tests the capabilities to load tables from csv, xls and xlsx
     formats.
-    
-    @author Joe Maguire
-    @author Matt Seal
     '''
     def setUp(self):
         self.datadir = os.path.join(dirname(__file__), 'tableLoadData')

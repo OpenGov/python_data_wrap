@@ -1,4 +1,4 @@
-import csv, re, os
+import csv, os
 
 def getExtension(filename):
     '''Gets the extension from a file name'''
@@ -13,13 +13,13 @@ class FileDataLoader(object):
     a list of lists of tokens is returned. Each sublist of
     tokens represents a single line.
     
+    Arsg:
+        filename: The filename being requested for loading
+        filedir: The directory of the file (optional)
+        delimiter: The delimiter to split lines (default ',' for csv)
+    
     Return Format:
         list[ ('line as string' or 'list[ tokens ]') ]
-        
-    @param filename The filename being requested for loading
-    @param filedir The directory of the file (optional)
-    @param delimiter The delimiter to split lines (default ',' for csv)
-    @author Matt Seal
     '''
     def __init__(self, filename, filedir='', delimiter=None):
         self.filename = filename
@@ -40,17 +40,17 @@ class FileDataLoader(object):
     def _loadCSV(self):
         fullname = self._getFullPath()
         delimiter = self._getDelim()
-        with open(fullname, 'rb') as file:
-            reader = csv.reader(file, delimiter=delimiter)
+        with open(fullname, 'rb') as dfile:
+            reader = csv.reader(dfile, delimiter=delimiter)
             return [line for line in reader]
         
     def _loadRaw(self):
         fullname = self._getFullPath()
-        with open(fullname, 'rb') as file:
+        with open(fullname, 'rb') as dfile:
             if self.delim == None:
-                return file.readlines()
+                return dfile.readlines()
             else:
-                return [line.split(self.delim) for line in file.readlines()]
+                return [line.split(self.delim) for line in dfile.readlines()]
             
     def loadData(self, forceCSV=False):
         if forceCSV or getExtension(self.filename) == 'csv':
@@ -94,12 +94,10 @@ class FileDataLoader(object):
                 self._reader = self._file
         return self
         
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, etype, value, traceback):
         try:
             if self._file != None:
                 self._file.close()
         finally:
             self.file = None
             self._reader = None
-
-

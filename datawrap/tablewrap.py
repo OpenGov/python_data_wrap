@@ -4,11 +4,8 @@ from listwrap import ListIter, MutableListSubset
 
 def squarifyTable(table):
     '''
-    Updates a table so that all rows are the same length by
-    filling smaller rows with 'None' objects up to the length
-    of the largest row.
-    
-    @author Matt Seal
+    Updates a table so that all rows are the same length by filling smaller 
+    rows with 'None' objects up to the length of the largest row.
     '''
     maxLength = 0
     minLength = sys.maxint
@@ -30,14 +27,13 @@ class Table(collections.Sequence):
     this object and the underlying list of lists is that this table
     slices and indexes by reference. Any changes to a slice of the
     table also changes the original table.
-    
-    @author Matt Seal
     '''
     def __init__(self, table, verify=True):
         '''
-        @param table A 2D table, usually a list of lists.
-        @param verify Flag for verifying that the table is complete 
-                      (all rows have same width).
+        Args:
+            table: A 2D table, usually a list of lists.
+            verify: Flag for verifying that the table is complete 
+                (all rows have same width).
         '''
         self._table = table
         self._length = len(table) if table else 0
@@ -76,8 +72,8 @@ class TableTranpose(collections.Sequence):
     table and consequentially the original table. This is done
     for performance reasons, as copying columns is expensive.
     
-    @param table 2D table of data (must be rectangular)
-    @author Matt Seal
+    Args:
+        table: 2D table of data (must be rectangular).
     '''
     class TableTransposeRow(collections.MutableSequence):
         '''
