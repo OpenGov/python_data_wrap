@@ -57,11 +57,12 @@ All unit tests for the repo.
 * Object Oriented (with a few exceptions)
 
 ## TODO
-Add tests for fileloader and savable
+* Add tests for fileloader and savable
+* Convert from Camel Case to PEP8/Google casing
 
 ## Author
 Author(s): Matthew Seal
 
 Collaborator(s): Joe Maguire
 
-#### (C) Copyright 2012, [Delphi Solutions](http://Delphi.us)
+#### (C) Copyright 2013, [OpenGov](http://opengov.com)

@@ -16,9 +16,9 @@ if (os.path.isdir(distdir)):
 
 setup(
     name = "PyDataWrap",
-    version = "1.1.2",
+    version = "1.2.0",
     author = "Matthew Seal",
-    author_email = "mseal@delphi.us",
+    author_email = "mseal@opengov.com",
     description = ("Tools for wrapping data and manipulating it in efficient ways"),
     install_requires=['xlrd'],
     packages=['datawrap'],
