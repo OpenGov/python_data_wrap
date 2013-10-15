@@ -1,11 +1,11 @@
 import collections
 
-class keydefaultdict(collections.defaultdict):
+class KeyDefaultDict(collections.defaultdict):
     '''
     Provides a default dictionary which lets the default value be
     based on the key input.
     
-    keydict = keydefaultdict(lambda key: key)
+    keydict = KeyDefaultDict(lambda key: key)
     
     Idea taken from stack overflow and cleaned up/reorganized:
         http://stackoverflow.com/questions/2912231/is-there-a-clever-way-to-pass-the-key-to-defaultdicts-default-factory/2912455#2912455

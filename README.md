@@ -53,16 +53,14 @@ The implementation files for the repository.
 All unit tests for the repo.  
 
 ## Language Preferences
-* Camel Case
+* Google Style Guide
 * Object Oriented (with a few exceptions)
 
 ## TODO
 * Add tests for fileloader and savable
-* Convert from Camel Case to PEP8/Google casing
 
 ## Author
 Author(s): Matthew Seal
-
 Collaborator(s): Joe Maguire
 
 #### (C) Copyright 2013, [OpenGov](http://opengov.com)

@@ -2,24 +2,24 @@ import sys
 import collections
 from listwrap import ListIter, MutableListSubset
 
-def squarifyTable(table):
+def squarify_table(table):
     '''
     Updates a table so that all rows are the same length by filling smaller 
     rows with 'None' objects up to the length of the largest row.
     '''
-    maxLength = 0
-    minLength = sys.maxint
+    max_length = 0
+    min_length = sys.maxint
     for row in table:
-        rowLen = len(row)
-        if rowLen > maxLength:
-            maxLength = rowLen
-        if rowLen < minLength:
-            minLength = rowLen
-    if maxLength != minLength:
+        row_len = len(row)
+        if row_len > max_length:
+            max_length = row_len
+        if row_len < min_length:
+            min_length = row_len
+    if max_length != min_length:
         for row in table:
-            rowLen = len(row)
-            if rowLen < maxLength:
-                row.extend([None]*(maxLength-rowLen))
+            row_len = len(row)
+            if row_len < max_length:
+                row.extend([None]*(max_length-row_len))
 
 class Table(collections.Sequence):
     '''
@@ -80,9 +80,9 @@ class TableTranpose(collections.Sequence):
         Represents a Row of the transpose which is equivalent
         to a Column of the original table.
         '''
-        def __init__(self, tableTranspose, rowIndex):
-            self._transpose = tableTranspose
-            self._rowIndex = rowIndex
+        def __init__(self, table_transpose, row_index):
+            self._transpose = table_transpose
+            self._row_index = row_index
             
         def __len__(self):
             return self._transpose._width
@@ -91,10 +91,10 @@ class TableTranpose(collections.Sequence):
             if isinstance(index, slice):
                 return MutableListSubset(self, index)
             else:
-                return self._transpose._table[index][self._rowIndex]
+                return self._transpose._table[index][self._row_index]
         
         def __setitem__(self, index, value):
-            self._transpose._table[index][self._rowIndex] = value
+            self._transpose._table[index][self._row_index] = value
             
         def insert(self, index, value):
             raise NotImplementedError("Cannot insert into a Table Transpose")

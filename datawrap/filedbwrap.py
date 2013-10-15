@@ -1,6 +1,6 @@
 import collections, shelve, os
 
-def getDefaultFileExt():
+def get_default_file_ext():
     '''
     Helper function for all file wrappers to identify
     standard extension.
@@ -28,43 +28,43 @@ class UnorderedCachedDict(collections.MutableMapping):
     and getting an item with None value is considered to be an entry for
     no item present.
     '''
-    def __init__(self, database, cacheSize, readOnly=False, 
-                 immutableVals=False, stringifyKeys=False,
-                 cacheMisses=True, databaseDefaultFunc=None,
-                 readPoolSize=0, **kwargs):
-        self.cacheSize = cacheSize
-        self.readOnly = readOnly
-        self.stringifyKeys = stringifyKeys
+    def __init__(self, database, cache_size, read_only=False, 
+                 immutable_vals=False, stringify_keys=False,
+                 cache_misses=True, database_default_func=None,
+                 read_pool_size=0, **kwargs):
+        self.cache_size = cache_size
+        self.read_only = read_only
+        self.stringify_keys = stringify_keys
         self.closed = False
         
-        self._immutableVals = immutableVals
-        self._cacheMisses = cacheMisses
+        self._immutable_vals = immutable_vals
+        self._cache_misses = cache_misses
         self._cache = {}
-        self._curSize = 0
-        self._readPoolSize = readPoolSize
+        self._cur_size = 0
+        self._read_pool_size = read_pool_size
         self._wqueue = set()
         self._database = database
-        self._databaseDefaultFunc = databaseDefaultFunc
+        self._database_default_func = database_default_func
         
-    def _addInitKwargs(self, kwargs):
+    def _add_init_kwargs(self, kwargs):
         # These can be changed by caller
-        if 'cacheSize' not in kwargs:
-            kwargs['cacheSize'] = self.cacheSize
-        if 'readOnly' not in kwargs:
-            kwargs['readOnly'] = self.readOnly
-        if 'cacheMisses' not in kwargs:
-            kwargs['cacheMisses'] = self._cacheMisses
-        if 'databaseDefaultFunc' not in kwargs:
-            kwargs['databaseDefaultFunc'] = self._databaseDefaultFunc
-        if 'readPoolSize' not in kwargs:
-            kwargs['readPoolSize'] = self._readPoolSize
-        if 'immutableVals' not in kwargs:
-            kwargs['immutableVals'] = self._immutableVals
-        if 'stringifyKeys' not in kwargs:
-            kwargs['stringifyKeys'] = self.stringifyKeys
+        if 'cache_size' not in kwargs:
+            kwargs['cache_size'] = self.cache_size
+        if 'read_only' not in kwargs:
+            kwargs['read_only'] = self.read_only
+        if 'cache_misses' not in kwargs:
+            kwargs['cache_misses'] = self._cache_misses
+        if 'database_default_func' not in kwargs:
+            kwargs['database_default_func'] = self._database_default_func
+        if 'read_pool_size' not in kwargs:
+            kwargs['read_pool_size'] = self._read_pool_size
+        if 'immutable_vals' not in kwargs:
+            kwargs['immutable_vals'] = self._immutable_vals
+        if 'stringify_keys' not in kwargs:
+            kwargs['stringify_keys'] = self.stringify_keys
         
     def _reinit(self, **kwargs):
-        self._addInitKwargs(kwargs)
+        self._add_init_kwargs(kwargs)
         
         # If we're not overwritten, pass this
         kwargs['database'] = self._database
@@ -79,14 +79,14 @@ class UnorderedCachedDict(collections.MutableMapping):
     def __exit__(self, etype, value, traceback):
         self.close()
         
-    def _checkCacheSize(self):
-        if self._curSize > self.cacheSize:
-            if self.readOnly:
-                self.dropCache()
+    def _check_cache_size(self):
+        if self._cur_size > self.cache_size:
+            if self.read_only:
+                self.drop_cache()
             else:
-                self.syncCache()
+                self.sync_cache()
     
-    def getCache(self):
+    def get_cache(self):
         '''
         Gets the cache as a stand-alone object -- updates
         directly to this cache will not be reflected/registered 
@@ -99,7 +99,7 @@ class UnorderedCachedDict(collections.MutableMapping):
         Checks cache for entry, then database for entry.
         '''
         val = None
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
         try:
             val = self._cache.__getitem__(key)
@@ -107,21 +107,21 @@ class UnorderedCachedDict(collections.MutableMapping):
             try:
                 val = self._database.__getitem__(key)
             except KeyError: pass
-            if val != None or self._cacheMisses:
-                self._insertCache(key, val, True)
-                self._checkCacheSize()
+            if val != None or self._cache_misses:
+                self._insert_cache(key, val, True)
+                self._check_cache_size()
         if val == None: 
-            if self._databaseDefaultFunc:
-                val = self._databaseDefaultFunc()
+            if self._database_default_func:
+                val = self._database_default_func()
             else:
                 raise KeyError(key)
         return val
     
     def __iter__(self):
-        self.syncWrites()
+        self._sync_writes()
         return self._database.__iter__()
     
-    def _insertCache(self, key, val, read):
+    def _insert_cache(self, key, val, read):
         '''
         Does an insert into the cache such that the cache
         will have an updated entry for the key,value,read
@@ -129,16 +129,16 @@ class UnorderedCachedDict(collections.MutableMapping):
         the local cache and queue any required writes to the
         database.
         '''
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
         cval = self._cache.get(key)
         if cval == None:
-            self._curSize += 1
+            self._cur_size += 1
         if cval == None or val != cval:
             self._cache[key] = val
             # Force a write if it's a write or if it's
             # unclear that the item was modified
-            if not self.readOnly and (not self._immutableVals or not read):
+            if not self.read_only and (not self._immutable_vals or not read):
                 self._wqueue.add(key)
     
     def __len__(self):
@@ -147,14 +147,14 @@ class UnorderedCachedDict(collections.MutableMapping):
         have a good __len__ implementation.
         '''
         # Need to sync before we know our true size
-        self.syncWrites()
+        self._sync_writes()
         return len(self._database)
     
     def __contains__(self, key):
         '''
         Checks cache for entry, then database for entry.
         '''
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
         try:
             cont = (self._cache.__getitem__(key) != None)
@@ -166,32 +166,32 @@ class UnorderedCachedDict(collections.MutableMapping):
                 val = None
                 cont = False
             # Store if it's a value or if we store missed checks
-            if val != None or self._cacheMisses:
-                self._insertCache(key, val, True)
-            self._checkCacheSize()
+            if val != None or self._cache_misses:
+                self._insert_cache(key, val, True)
+            self._check_cache_size()
         return cont
         
     def __setitem__(self, key, val):
         if val == None:
             raise AttributeError("Attempted to set a key value to None")
-        if self.readOnly:
-            raise AttributeError("Attempted to set in readOnly mode")
-        if key != None and self.stringifyKeys:
+        if self.read_only:
+            raise AttributeError("Attempted to set in read_only mode")
+        if key != None and self.stringify_keys:
             key = str(key)
-        self._insertCache(key, val, False)
-        self._checkCacheSize()
+        self._insert_cache(key, val, False)
+        self._check_cache_size()
            
     def __delitem__(self, key):
         '''
         Deletes from both the cache, write queues and the database
         ''' 
-        if self.readOnly:
-            raise AttributeError("Attempted to delete in readOnly mode")
-        if key != None and self.stringifyKeys:
+        if self.read_only:
+            raise AttributeError("Attempted to delete in read_only mode")
+        if key != None and self.stringify_keys:
             key = str(key)
             
-        if self._cacheMisses:
-            self._insertCache(key, None, True)
+        if self._cache_misses:
+            self._insert_cache(key, None, True)
         elif key in self._cache:
             del self._cache[key]
         if key in self._wqueue:
@@ -200,7 +200,7 @@ class UnorderedCachedDict(collections.MutableMapping):
         if key in self._database:
             self._database.__delitem__(key)
           
-    def syncWrites(self):
+    def _sync_writes(self):
         '''
         Flushes the write queue
         '''
@@ -211,14 +211,14 @@ class UnorderedCachedDict(collections.MutableMapping):
         self._wqueue = set()
         self._database.sync()
             
-    def syncCache(self):
+    def sync_cache(self):
         '''
         Flushes the write queue to the database.
         '''
-        self.syncWrites()
-        self.dropCache()
+        self._sync_writes()
+        self.drop_cache()
         
-    def dropCache(self):
+    def drop_cache(self):
         '''
         Drops all changes in the cache.
         '''
@@ -226,11 +226,11 @@ class UnorderedCachedDict(collections.MutableMapping):
         self._cache  = {}
         del self._wqueue
         self._wqueue = set()
-        self._curSize = 0
+        self._cur_size = 0
         
     def close(self, **kwargs):
         if not self.closed:
-            self.syncCache()
+            self.sync_cache()
             # This will barf if the database doesn't have a close operator,
             # so check for close first
             if hasattr(self._database, 'close'):
@@ -248,30 +248,30 @@ class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
     database as a dictionary, but treated as a set on the external
     interface.
     '''
-    def __init__(self, database, cacheSize, readOnly=False, cacheMisses=True, 
-                 immutableVals=False, stringifyKeys=False, readPoolSize=0, **kwargs):
-        UnorderedCachedDict.__init__(self, database, cacheSize=cacheSize, 
-                                     cacheMisses=cacheMisses, readOnly=readOnly, 
-                                     immutableVals=immutableVals, readPoolSize=readPoolSize, 
-                                     stringifyKeys=stringifyKeys, **kwargs)
+    def __init__(self, database, cache_size, read_only=False, cache_misses=True, 
+                 immutable_vals=False, stringify_keys=False, read_pool_size=0, **kwargs):
+        UnorderedCachedDict.__init__(self, database, cache_size=cache_size, 
+                                     cache_misses=cache_misses, read_only=read_only, 
+                                     immutable_vals=immutable_vals, read_pool_size=read_pool_size, 
+                                     stringify_keys=stringify_keys, **kwargs)
         
-    def _dictSet(self, key, val):
+    def _dict_set(self, key, val):
         '''
         These allow for direct access to the dictionary holding
         the set under a different naming convention (to prevent
         dictionary like syntax from working on external interface).
         '''
         # Call UnorderedCachedDict's version of setitem since we've disabled it
-        # No need to check stringifyKeys, as it will be checked in the next setitem
+        # No need to check stringify_keys, as it will be checked in the next setitem
         UnorderedCachedDict.__setitem__(self, key, val)
         
-    def _dictGet(self, key):
+    def _dict_get(self, key):
         # Call UnorderedCachedDict's version of setitem since we've disabled it
-        # No need to check stringifyKeys, as it will be checked in the next setitem
+        # No need to check stringify_keys, as it will be checked in the next setitem
         return UnorderedCachedDict.__getitem__(self, key)
         
     def add(self, elem):
-        self._dictSet(elem, True)
+        self._dict_set(elem, True)
 
     def discard(self, elem):
         self.__delitem__(elem)
@@ -291,7 +291,7 @@ class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
         preprocess = kwargs.get('preprocess')
         for s in args:
             for e in s:
-                self._dictSet(preprocess(e) if preprocess else e, True)
+                self._dict_set(preprocess(e) if preprocess else e, True)
 
 class MemDict(collections.MutableMapping):
     '''
@@ -301,35 +301,35 @@ class MemDict(collections.MutableMapping):
     standardized among several databases
     '''
     # Careful with changing __init__ params and forgetting them in _reinit
-    def __init__(self, dbname, readOnly=False, databaseDefaultFunc=None, 
-                 stringifyKeys=False, **kwargs):
-        self._dbname = dbname
-        self.readOnly = readOnly
-        self.stringifyKeys = stringifyKeys
-        self._databaseDefaultFunc = databaseDefaultFunc
+    def __init__(self, db_name, read_only=False, database_default_func=None, 
+                 stringify_keys=False, **kwargs):
+        self._db_name = db_name
+        self.read_only = read_only
+        self.stringify_keys = stringify_keys
+        self._database_default_func = database_default_func
         self._database = {}
-        self._resetDatabase()
+        self._reset_database()
         
-    def _addInitKwargs(self, kwargs):
+    def _add_init_kwargs(self, kwargs):
         # These can be changed by caller
-        if 'readOnly' not in kwargs:
-            kwargs['readOnly'] = self.readOnly
-        if 'stringifyKeys' not in kwargs:
-            kwargs['stringifyKeys'] = self.stringifyKeys
-        if 'databaseDefaultFunc' not in kwargs:
-            kwargs['databaseDefaultFunc'] = self._databaseDefaultFunc
+        if 'read_only' not in kwargs:
+            kwargs['read_only'] = self.read_only
+        if 'stringify_keys' not in kwargs:
+            kwargs['stringify_keys'] = self.stringify_keys
+        if 'database_default_func' not in kwargs:
+            kwargs['database_default_func'] = self._database_default_func
         
         # This stays the same
-        kwargs['dbname'] = self._dbname
+        kwargs['db_name'] = self._db_name
         
     def _reinit(self, **kwargs):
-        self._addInitKwargs(kwargs)
+        self._add_init_kwargs(kwargs)
         
         # Call __init__ again
         self.close()
         self.__init__(**kwargs)
         
-    def _resetDatabase(self):
+    def _reset_database(self):
         del self._database
         self._database = {}
         
@@ -339,17 +339,17 @@ class MemDict(collections.MutableMapping):
     def __exit__(self, etype, value, traceback):
         self.close()
                 
-    def getCache(self):
+    def get_cache(self):
         return self._database
     
     def __getitem__(self, key):
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
         try:
             return self._database.__getitem__(key)
         except KeyError: 
-            if self._databaseDefaultFunc != None:
-                return self._databaseDefaultFunc()
+            if self._database_default_func != None:
+                return self._database_default_func()
             else:
                 raise
     
@@ -360,48 +360,48 @@ class MemDict(collections.MutableMapping):
         return self._database.__len__()
     
     def __contains__(self, key):
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
         return self._database.__contains__(key)
         
     def __setitem__(self, key, val):
-        if self.readOnly:
-            raise AttributeError("Attempted to set in readOnly mode")
-        if key != None and self.stringifyKeys:
+        if self.read_only:
+            raise AttributeError("Attempted to set in read_only mode")
+        if key != None and self.stringify_keys:
             key = str(key)
         self._database.__setitem__(key, val)
             
     def __delitem__(self, key):
-        if self.readOnly:
-            raise AttributeError("Attempted to delete in readOnly mode")
-        if key != None and self.stringifyKeys:
+        if self.read_only:
+            raise AttributeError("Attempted to delete in read_only mode")
+        if key != None and self.stringify_keys:
             key = str(key)
         self._database.__delitem__(key)
             
-    def syncWrites(self):
+    def _sync_writes(self):
         pass # No-op
             
-    def syncCache(self):
+    def sync_cache(self):
         pass # No-op
         
-    def dropCache(self):
+    def drop_cache(self):
         pass # No-op
         
     def close(self, **kwargs):
-        self._resetDatabase()
+        self._reset_database()
         
-    def reopen(self, readOnly=None, **kwargs):
-        self.readOnly = readOnly if readOnly != None else self.readOnly
-        if 'databaseDefaultFunc' in kwargs:
-            self._databaseDefaultFunc = kwargs['databaseDefaultFunc']
-        if 'stringifyKeys' in kwargs:
-            self.stringifyKeys = kwargs['stringifyKeys']
+    def reopen(self, read_only=None, **kwargs):
+        self.read_only = read_only if read_only != None else self.read_only
+        if 'database_default_func' in kwargs:
+            self._database_default_func = kwargs['database_default_func']
+        if 'stringify_keys' in kwargs:
+            self.stringify_keys = kwargs['stringify_keys']
         # No need to re-initialize -- it's already in memory
         
-    def clear(self, readOnly=None, **kwargs):
+    def clear(self, read_only=None, **kwargs):
         # Careful with changing __init__ params and forgetting them here...
-        if readOnly != None:
-            kwargs['readOnly'] = readOnly
+        if read_only != None:
+            kwargs['read_only'] = read_only
         self._reinit(**kwargs)
         
     def __del__(self):
@@ -414,74 +414,74 @@ class MemFromFileDict(MemDict):
     allows the dictionary to be reloaded and/or saved upon closing.
     '''   
     # Careful with changing __init__ params and forgetting them in _reinit
-    def __init__(self, dbname, dbext=None, readOnly=False, databaseDefaultFunc=None, 
-                 clear=False, stringifyKeys=False, **kwargs):
-        MemDict.__init__(self, dbname, readOnly=readOnly, 
-                         stringifyKeys=stringifyKeys, 
-                         databaseDefaultFunc=databaseDefaultFunc, 
+    def __init__(self, db_name, db_ext=None, read_only=False, database_default_func=None, 
+                 clear=False, stringify_keys=False, **kwargs):
+        MemDict.__init__(self, db_name, read_only=read_only, 
+                         stringify_keys=stringify_keys, 
+                         database_default_func=database_default_func, 
                          **kwargs)
-        self._dbext = dbext if dbext != None else getDefaultFileExt()
-        absdirpath = os.path.dirname(os.path.abspath(dbname))
-        dirpresent = os.path.exists(absdirpath)
-        if not dirpresent:
-            try: os.makedirs(absdirpath)
+        self._db_ext = db_ext if db_ext != None else get_default_file_ext()
+        abs_dir_path = os.path.dirname(os.path.abspath(db_name))
+        dir_present = os.path.exists(abs_dir_path)
+        if not dir_present:
+            try: os.makedirs(abs_dir_path)
             except OSError: pass
-        self._dbfullpath = '.'.join((os.path.abspath(dbname), self._dbext))
-        filepresent = os.path.exists(self._dbfullpath)
-        self.flag = 'n' if clear else 'r' if readOnly and filepresent else 'c'
+        self._db_full_path = '.'.join((os.path.abspath(db_name), self._db_ext))
+        file_present = os.path.exists(self._db_full_path)
+        self.flag = 'n' if clear else 'r' if read_only and file_present else 'c'
         self.closed = False
-        self._dbfile = shelve.open(self._dbfullpath, flag=self.flag)
+        self._db_file = shelve.open(self._db_full_path, flag=self.flag)
         if not clear:
             # Copy all elements into memory dict
-            for key in self._dbfile:
-                self._database[key] = self._dbfile[key]
+            for key in self._db_file:
+                self._database[key] = self._db_file[key]
         # We're done with the file for now
-        self._dbfile.close()
+        self._db_file.close()
         
-    def _addInitKwargs(self, kwargs):
-        MemDict._addInitKwargs(self, kwargs)
+    def _add_init_kwargs(self, kwargs):
+        MemDict._add_init_kwargs(self, kwargs)
         
-        kwargs['dbname'] = self._dbname
-        kwargs['dbext'] = self._dbext
+        kwargs['db_name'] = self._db_name
+        kwargs['db_ext'] = self._db_ext
         
     def _reinit(self, **kwargs):
-        self._addInitKwargs(kwargs)
+        self._add_init_kwargs(kwargs)
         self.close()
         self.__init__(**kwargs)
             
-    def reopen(self, readOnly=None, **kwargs):
-        kwargs['readOnly'] = readOnly if readOnly != None else self.readOnly
+    def reopen(self, read_only=None, **kwargs):
+        kwargs['read_only'] = read_only if read_only != None else self.read_only
         kwargs['clear'] = False
         self._reinit(**kwargs)
             
-    def clear(self, readOnly=None, **kwargs):
-        kwargs['readOnly'] = readOnly if readOnly != None else self.readOnly
+    def clear(self, read_only=None, **kwargs):
+        kwargs['read_only'] = read_only if read_only != None else self.read_only
         kwargs['clear'] = True
         self._reinit(**kwargs)
         
-    def close(self, deleteFile=False, **kwargs):
-        if deleteFile:
+    def close(self, delete_file=False, **kwargs):
+        if delete_file:
             # Security vulnerability if file is accessible by 3rd party
             # as there is a time gap between closing and deleting
-            try: os.remove(self._dbfullpath)
+            try: os.remove(self._db_full_path)
             except: pass
         elif not self.closed:
-            self.syncCache()
-        self._resetDatabase()
+            self.sync_cache()
+        self._reset_database()
         self.closed = True
         
-    def syncWrites(self):
-        if not self.readOnly:
-            self._dbfile = shelve.open(self._dbfullpath, flag='n')
+    def _sync_writes(self):
+        if not self.read_only:
+            self._db_file = shelve.open(self._db_full_path, flag='n')
             for key in self._database:
-                self._dbfile[key] = self._database[key]
-            self._dbfile.sync()
+                self._db_file[key] = self._database[key]
+            self._db_file.sync()
             # We're done with the file for now
-            self._dbfile.close()
+            self._db_file.close()
             
-    def syncCache(self):
-        self.syncWrites()
-        self.dropCache()
+    def sync_cache(self):
+        self._sync_writes()
+        self.drop_cache()
 
 class FileDict(UnorderedCachedDict):
     '''
@@ -491,62 +491,62 @@ class FileDict(UnorderedCachedDict):
     filesystem without consuming all available memory.
     '''
     # Careful with changing __init__ params and forgetting them in _reinit
-    def __init__(self, dbname, dbext=None, readOnly=False, clear=False, cacheSize=10*1024, 
-                 immutableVals=False, stringifyKeys=False, cacheMisses=True,
-                 databaseDefaultFunc=None, readPoolSize=0, **kwargs):
-        self._dbname = dbname
-        self._dbext = dbext if dbext != None else getDefaultFileExt()
-        absdirpath = os.path.dirname(os.path.abspath(dbname))
-        dirpresent = os.path.exists(absdirpath)
-        if not dirpresent:
-            try: os.makedirs(absdirpath)
+    def __init__(self, db_name, db_ext=None, read_only=False, clear=False, cache_size=10*1024, 
+                 immutable_vals=False, stringify_keys=False, cache_misses=True,
+                 database_default_func=None, read_pool_size=0, **kwargs):
+        self._db_name = db_name
+        self._db_ext = db_ext if db_ext != None else get_default_file_ext()
+        abs_dir_path = os.path.dirname(os.path.abspath(db_name))
+        dir_present = os.path.exists(abs_dir_path)
+        if not dir_present:
+            try: os.makedirs(abs_dir_path)
             except OSError: pass
-        self._dbfullpath = '.'.join((os.path.abspath(dbname), self._dbext))
-        filepresent = os.path.exists(self._dbfullpath)
-        self.flag = 'n' if clear else 'r' if readOnly and filepresent else 'c'
-        self._database = shelve.open(self._dbfullpath, flag=self.flag)
+        self._db_full_path = '.'.join((os.path.abspath(db_name), self._db_ext))
+        file_present = os.path.exists(self._db_full_path)
+        self.flag = 'n' if clear else 'r' if read_only and file_present else 'c'
+        self._database = shelve.open(self._db_full_path, flag=self.flag)
         self.closed = False
-        UnorderedCachedDict.__init__(self, self._database, cacheSize=cacheSize, 
-                                     databaseDefaultFunc=databaseDefaultFunc, readOnly=readOnly, 
-                                     immutableVals=immutableVals, stringifyKeys=stringifyKeys,
-                                     cacheMisses=cacheMisses, readPoolSize=readPoolSize, **kwargs)
+        UnorderedCachedDict.__init__(self, self._database, cache_size=cache_size, 
+                                     database_default_func=database_default_func, read_only=read_only, 
+                                     immutable_vals=immutable_vals, stringify_keys=stringify_keys,
+                                     cache_misses=cache_misses, read_pool_size=read_pool_size, **kwargs)
     
-    def _addInitKwargs(self, kwargs):
-        kwargs['dbname'] = self._dbname
-        kwargs['dbext'] = self._dbext
-        UnorderedCachedDict._addInitKwargs(self, kwargs)
+    def _add_init_kwargs(self, kwargs):
+        kwargs['db_name'] = self._db_name
+        kwargs['db_ext'] = self._db_ext
+        UnorderedCachedDict._add_init_kwargs(self, kwargs)
         
     def _reinit(self, **kwargs):
-        self._addInitKwargs(kwargs)
+        self._add_init_kwargs(kwargs)
         self.close()
         self.__init__(**kwargs)
         
-    def reopen(self, readOnly=None, cacheSize=None, **kwargs):
-        if readOnly != None:
-            kwargs['readOnly'] = readOnly
-        if cacheSize != None:
-            kwargs['cacheSize'] = cacheSize
+    def reopen(self, read_only=None, cache_size=None, **kwargs):
+        if read_only != None:
+            kwargs['read_only'] = read_only
+        if cache_size != None:
+            kwargs['cache_size'] = cache_size
         kwargs['clear'] = False
         self._reinit(**kwargs)
         
-    def clear(self, readOnly=None, cacheSize=None, **kwargs):
-        if readOnly != None:
-            kwargs['readOnly'] = readOnly
-        if cacheSize != None:
-            kwargs['cacheSize'] = cacheSize
+    def clear(self, read_only=None, cache_size=None, **kwargs):
+        if read_only != None:
+            kwargs['read_only'] = read_only
+        if cache_size != None:
+            kwargs['cache_size'] = cache_size
         kwargs['clear'] = True
         self._reinit(**kwargs)
         
-    def close(self, deleteFile=False, **kwargs):
-        if deleteFile:
+    def close(self, delete_file=False, **kwargs):
+        if delete_file:
             # Security vulnerability if file is accessible by 3rd party
             # as there is a time gap between closing and deleting
             if not self.closed:
                 self._database.close()
-            try: os.remove(self._dbfullpath)
+            try: os.remove(self._db_full_path)
             except: pass
         elif not self.closed:
-            self.syncCache()
+            self.sync_cache()
             self._database.close()
         self.closed = True
         
@@ -555,63 +555,63 @@ class FileSet(UnorderedCachedSet):
     Much like a FileDict, except treated as a Set instead.
     '''
     # Careful with changing __init__ params and forgetting them in reopen/clear
-    def __init__(self, dbname, dbext=None, readOnly=False, clear=False, cacheSize=10*1024, 
-                 immutableVals=False, stringifyKeys=False, cacheMisses=True, 
-                 readPoolSize=0, **kwargs):
-        self._dbname = dbname
-        self._dbext = dbext if dbext != None else getDefaultFileExt()
-        absdirpath = os.path.dirname(os.path.abspath(dbname))
-        dirpresent = os.path.exists(absdirpath)
-        if not dirpresent:
-            try: os.makedirs(absdirpath)
+    def __init__(self, db_name, db_ext=None, read_only=False, clear=False, cache_size=10*1024, 
+                 immutable_vals=False, stringify_keys=False, cache_misses=True, 
+                 read_pool_size=0, **kwargs):
+        self._db_name = db_name
+        self._db_ext = db_ext if db_ext != None else get_default_file_ext()
+        abs_dir_path = os.path.dirname(os.path.abspath(db_name))
+        dir_present = os.path.exists(abs_dir_path)
+        if not dir_present:
+            try: os.makedirs(abs_dir_path)
             except OSError: pass
-        self._dbfullpath = '.'.join((os.path.abspath(dbname), self._dbext))
-        filepresent = os.path.exists(self._dbfullpath)
-        self.flag = 'n' if clear else 'r' if readOnly and filepresent else 'c'
-        self._database = shelve.open(self._dbfullpath, flag=self.flag)
+        self._db_full_path = '.'.join((os.path.abspath(db_name), self._db_ext))
+        file_present = os.path.exists(self._db_full_path)
+        self.flag = 'n' if clear else 'r' if read_only and file_present else 'c'
+        self._database = shelve.open(self._db_full_path, flag=self.flag)
         self.closed = False
-        UnorderedCachedSet.__init__(self, self._database, cacheSize=cacheSize, 
-                                    readOnly=readOnly, immutableVals=immutableVals,
-                                    stringifyKeys=stringifyKeys, 
-                                    cacheMisses=cacheMisses, 
-                                    readPoolSize=readPoolSize, **kwargs)
+        UnorderedCachedSet.__init__(self, self._database, cache_size=cache_size, 
+                                    read_only=read_only, immutable_vals=immutable_vals,
+                                    stringify_keys=stringify_keys, 
+                                    cache_misses=cache_misses, 
+                                    read_pool_size=read_pool_size, **kwargs)
         
-    def _addInitKwargs(self, kwargs):
-        kwargs['dbname'] = self._dbname
-        kwargs['dbext'] = self._dbext
-        UnorderedCachedSet._addInitKwargs(self, kwargs)
+    def _add_init_kwargs(self, kwargs):
+        kwargs['db_name'] = self._db_name
+        kwargs['db_ext'] = self._db_ext
+        UnorderedCachedSet._add_init_kwargs(self, kwargs)
         
     def _reinit(self, **kwargs):
-        self._addInitKwargs(kwargs)
+        self._add_init_kwargs(kwargs)
         self.close()
         self.__init__(**kwargs)
         
-    def reopen(self, readOnly=None, cacheSize=None, **kwargs):
-        if readOnly != None:
-            kwargs['readOnly'] = readOnly
-        if cacheSize != None:
-            kwargs['cacheSize'] = cacheSize
+    def reopen(self, read_only=None, cache_size=None, **kwargs):
+        if read_only != None:
+            kwargs['read_only'] = read_only
+        if cache_size != None:
+            kwargs['cache_size'] = cache_size
         kwargs['clear'] = False
         self._reinit(**kwargs)
         
-    def clear(self, readOnly=None, cacheSize=None, **kwargs):
-        if readOnly != None:
-            kwargs['readOnly'] = readOnly
-        if cacheSize != None:
-            kwargs['cacheSize'] = cacheSize
+    def clear(self, read_only=None, cache_size=None, **kwargs):
+        if read_only != None:
+            kwargs['read_only'] = read_only
+        if cache_size != None:
+            kwargs['cache_size'] = cache_size
         kwargs['clear'] = True
         self._reinit(**kwargs)
         
-    def close(self, deleteFile=False, **kwargs):
-        if deleteFile:
+    def close(self, delete_file=False, **kwargs):
+        if delete_file:
             # Security vulnerability if file is accessible by 3rd party
             # as there is a time gap between closing and deleting
             if not self.closed:
                 self._database.close()
-            try: os.remove(self._dbfullpath)
+            try: os.remove(self._db_full_path)
             except: pass
         elif not self.closed:
-            self.syncCache()
+            self.sync_cache()
             self._database.close()
         self.closed = True
         
@@ -620,55 +620,55 @@ class SplitDbDict(collections.MutableMapping):
     Defines a way to split data among any number of arbitrary databases.
     All arguments in kwargs are applied to each database constructor.
     
-    The default database class is baseDbClass, while key specific classes
-    can be defined in keyedClasses as a dictionary input. These overwrite
-    the default dbclass.
+    The default database class is base_db_class, while key specific classes
+    can be defined in keyed_classes as a dictionary input. These overwrite
+    the default db_class.
     
-    If the splitFunc gives an invalid key name, a KeyError will be raised,
-    so make sure updates to splitKeys also updates splitFunc.
+    If the split_func gives an invalid key name, a KeyError will be raised,
+    so make sure updates to split_keys also updates split_func.
     
-    If a cacheSize if passed through kwargs, it is evenly divided among all
+    If a cache_size if passed through kwargs, it is evenly divided among all
     databases.
     '''
-    def __init__(self, dbname, baseDbClass, splitKeys, splitFunc, keyedClasses=None, 
-                 stringifyKeys=False, **kwargs):
-        self.stringifyKeys = stringifyKeys
-        self.splitKeys = splitKeys
-        self.splitFunc = splitFunc
+    def __init__(self, db_name, base_db_class, split_keys, split_func, 
+                 keyed_classes=None, stringify_keys=False, **kwargs):
+        self.stringify_keys = stringify_keys
+        self.split_keys = split_keys
+        self.split_func = split_func
         
-        self._dbname = dbname
-        self._keyedDb = {}
-        self._baseDbClass = baseDbClass
-        self._keyedClasses = keyedClasses if keyedClasses else {}
+        self._db_name = db_name
+        self._keyed_db = {}
+        self._base_db_class = base_db_class
+        self._keyed_classes = keyed_classes if keyed_classes else {}
         # Force caches to be split evenly among all databases
-        self.checkUpdateCacheSet(len(self.splitKeys), kwargs)
-        for skey in self.splitKeys:
-            if self._keyedClasses and skey in self._keyedClasses:
-                dbclass = self._keyedClasses[skey]
+        self.check_update_cache_set(len(self.split_keys), kwargs)
+        for skey in self.split_keys:
+            if self._keyed_classes and skey in self._keyed_classes:
+                db_class = self._keyed_classes[skey]
             else:
-                dbclass = self._baseDbClass
-            self._keyedDb[skey] = dbclass(self._dbname+'_'+str(skey), **kwargs)
+                db_class = self._base_db_class
+            self._keyed_db[skey] = db_class(self._db_name+'_'+str(skey), **kwargs)
             
-    def checkUpdateCacheSet(self, numKeys, kwargs):
-        if "cacheSize" in kwargs:
-            kwargs["cacheSize"] /= numKeys
+    def check_update_cache_set(self, numKeys, kwargs):
+        if "cache_size" in kwargs:
+            kwargs["cache_size"] /= numKeys
             
     def reopen(self, **kwargs):
         # Force caches to be split evenly among all databases
-        self.checkUpdateCacheSet(len(self.splitKeys), kwargs)
-        for db in self._keyedDb.values():
+        self.check_update_cache_set(len(self.split_keys), kwargs)
+        for db in self._keyed_db.values():
             if hasattr(db, 'reopen'):
                 db.reopen(**kwargs)
             
     def clear(self, **kwargs):
         # Force caches to be split evenly among all databases
-        self.checkUpdateCacheSet(len(self.splitKeys), kwargs)
-        for db in self._keyedDb.values():
+        self.check_update_cache_set(len(self.split_keys), kwargs)
+        for db in self._keyed_db.values():
             if hasattr(db, 'clear'):
                 db.clear(**kwargs)
             
     def close(self, **kwargs):
-        for db in self._keyedDb.values():
+        for db in self._keyed_db.values():
             if hasattr(db, 'close'):
                 db.close(**kwargs)
             
@@ -678,16 +678,16 @@ class SplitDbDict(collections.MutableMapping):
     def __exit__(self, etype, value, traceback):
         self.close()
                 
-    def getCache(self):
+    def get_cache(self):
         cahces = {}
-        for shortkey, db in self._keyedDb.items():
-            cahces[shortkey] = db.getCache()
+        for shortkey, db in self._keyed_db.items():
+            cahces[shortkey] = db.get_cache()
         return cahces
     
     def __getitem__(self, key):
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
-        db = self._keyedDb[self.splitFunc(key)]
+        db = self._keyed_db[self.split_func(key)]
         return db.__getitem__(key)
     
     def __iter__(self):
@@ -699,62 +699,62 @@ class SplitDbDict(collections.MutableMapping):
         class MultiIter(object):
             def __init__(self, iterables):
                 self.iterables = [iter.__iter__() for iter in iterables]
-                self.curIter = None
+                self.cur_iter = None
             
             def __iter__(self):
                 return self
             
             def next(self):
-                if self.curIter == None:
+                if self.cur_iter == None:
                     # If we're out of iterables, then StopIteration
                     try:
-                        self.curIter = self.iterables.pop()
+                        self.cur_iter = self.iterables.pop()
                     except IndexError:
                         raise StopIteration()
                 try:
-                    return self.curIter.next()
+                    return self.cur_iter.next()
                 except StopIteration:
                     # Clear out the iterator and call next
-                    self.curIter = None
+                    self.cur_iter = None
                     return self.next()
         
-        return MultiIter(self._keyedDb.values())
+        return MultiIter(self._keyed_db.values())
             
     def __len__(self):
         totlen = 0
-        for db in self._keyedDb.values():
+        for db in self._keyed_db.values():
             totlen += db.__len__()
         return totlen
     
     def __contains__(self, key):
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
-        db = self._keyedDb[self.splitFunc(key)]
+        db = self._keyed_db[self.split_func(key)]
         return db.__contains__(key)
         
     def __setitem__(self, key, val):
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
-        db = self._keyedDb[self.splitFunc(key)]
+        db = self._keyed_db[self.split_func(key)]
         db.__setitem__(key, val)
             
     def __delitem__(self, key):
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
-        db = self._keyedDb[self.splitFunc(key)]
+        db = self._keyed_db[self.split_func(key)]
         db.__delitem__(key)
             
-    def syncWrites(self):
-        for db in self._keyedDb.values():
-            db.syncWrites()
+    def _sync_writes(self):
+        for db in self._keyed_db.values():
+            db._sync_writes()
             
-    def syncCache(self):
-        for db in self._keyedDb.values():
-            db.syncCache()
+    def sync_cache(self):
+        for db in self._keyed_db.values():
+            db.sync_cache()
         
-    def dropCache(self):
-        for db in self._keyedDb.values():
-            db.dropCache()
+    def drop_cache(self):
+        for db in self._keyed_db.values():
+            db.drop_cache()
             
     def __del__(self):
         # Close if we're being collected
@@ -765,55 +765,55 @@ class SplitDbSet(collections.MutableSet, SplitDbDict):
     Defines a way to split data among any number of arbitrary databases.
     All arguments in kwargs are applied to each database constructor.
     
-    The default database class is baseDbClass, while key specific classes
-    can be defined in keyedClasses as a dictionary input. These overwrite
-    the default dbclass.
+    The default database class is base_db_class, while key specific classes
+    can be defined in keyed_classes as a dictionary input. These overwrite
+    the default db_class.
     
-    If the splitFunc gives an invalid key name, a KeyError will be raised,
-    so make sure updates to splitKeys also updates splitFunc.
+    If the split_func gives an invalid key name, a KeyError will be raised,
+    so make sure updates to split_keys also updates split_func.
     
-    If a cacheSize if passed through kwargs, it is evenly divided among all
+    If a cache_size if passed through kwargs, it is evenly divided among all
     databases.
     '''
-    def __init__(self, dbname, baseDbClass, splitKeys, splitFunc, keyedClasses=None, 
-                 stringifyKeys=False, **kwargs):
-        self.stringifyKeys = stringifyKeys
-        self.splitKeys = splitKeys
-        self.splitFunc = splitFunc
+    def __init__(self, db_name, base_db_class, split_keys, split_func, 
+                 keyed_classes=None, stringify_keys=False, **kwargs):
+        self.stringify_keys = stringify_keys
+        self.split_keys = split_keys
+        self.split_func = split_func
         
-        self._dbname = dbname
-        self._keyedDb = {}
-        self._baseDbClass = baseDbClass
-        self._keyedClasses = keyedClasses if keyedClasses else {}
+        self._db_name = db_name
+        self._keyed_db = {}
+        self._base_db_class = base_db_class
+        self._keyed_classes = keyed_classes if keyed_classes else {}
         # Force caches to be split evenly among all databases
-        if "cacheSize" in kwargs:
-            kwargs["cacheSize"] /= len(self.splitKeys)
-        for skey in self.splitKeys:
-            if self._keyedClasses and skey in self._keyedClasses:
-                dbclass = self._keyedClasses[skey]
+        if "cache_size" in kwargs:
+            kwargs["cache_size"] /= len(self.split_keys)
+        for skey in self.split_keys:
+            if self._keyed_classes and skey in self._keyed_classes:
+                db_class = self._keyed_classes[skey]
             else:
-                dbclass = self._baseDbClass
-            self._keyedDb[skey] = dbclass(self._dbname+'_'+str(skey), **kwargs)
+                db_class = self._base_db_class
+            self._keyed_db[skey] = db_class(self._db_name+'_'+str(skey), **kwargs)
             
-    def _dictSet(self, key, val):
+    def _dict_set(self, key, val):
         '''
         These allow for direct access to the dictionary holding
         the set under a different naming convention (to prevent
         dictionary like syntax from working on external interface).
         '''
-        if key != None and self.stringifyKeys:
+        if key != None and self.stringify_keys:
             key = str(key)
-        db = self._keyedDb[self.splitFunc(key)]
-        db._dictSet(key, val)
+        db = self._keyed_db[self.split_func(key)]
+        db._dict_set(key, val)
         
-    def _dictGet(self, key):
-        if key != None and self.stringifyKeys:
+    def _dict_get(self, key):
+        if key != None and self.stringify_keys:
             key = str(key)
-        db = self._keyedDb[self.splitFunc(key)]
-        return db._dictGet(key)
+        db = self._keyed_db[self.split_func(key)]
+        return db._dict_get(key)
         
     def add(self, elem):
-        self._dictSet(elem, True)
+        self._dict_set(elem, True)
 
     def discard(self, elem):
         self.__delitem__(elem)
@@ -833,7 +833,7 @@ class SplitDbSet(collections.MutableSet, SplitDbDict):
         preprocess = kwargs.get('preprocess')
         for s in args:
             for e in s:
-                self._dictSet(preprocess(e) if preprocess else e, True)
+                self._dict_set(preprocess(e) if preprocess else e, True)
         
 class SplitFileDict(SplitDbDict):
     '''
@@ -841,24 +841,24 @@ class SplitFileDict(SplitDbDict):
     This is useful if you have a large dictionary of words and want
     to store all words with the same first character together.
     '''
-    def __init__(self, dbname, splitKeys, splitFunc, dbext=None, readOnly=False, 
-                 clear=False, cacheMisses=True, cacheSize=10*1024, immutableVals=False, 
-                 stringifyKeys=False, databaseDefaultFunc=None, **kwargs):
-        SplitDbDict.__init__(self, dbname, FileDict, splitKeys, splitFunc, dbext=dbext,
-                             readOnly=readOnly, clear=clear, cacheSize=cacheSize,
-                             immutableVals=immutableVals, stringifyKeys=stringifyKeys, 
-                             databaseDefaultFunc=databaseDefaultFunc, 
-                             cacheMisses=cacheMisses, **kwargs)
+    def __init__(self, db_name, split_keys, split_func, db_ext=None, read_only=False, 
+                 clear=False, cache_misses=True, cache_size=10*1024, immutable_vals=False, 
+                 stringify_keys=False, database_default_func=None, **kwargs):
+        SplitDbDict.__init__(self, db_name, FileDict, split_keys, split_func, db_ext=db_ext,
+                             read_only=read_only, clear=clear, cache_size=cache_size,
+                             immutable_vals=immutable_vals, stringify_keys=stringify_keys, 
+                             database_default_func=database_default_func, 
+                             cache_misses=cache_misses, **kwargs)
         
 class SplitFileSet(SplitDbSet):
     '''
     Much like a SplitFileDict, except treated as a Set instead.
     '''
-    def __init__(self, dbname, splitKeys, splitFunc, dbext=None, readOnly=False, 
-                 clear=False, cacheMisses=True, cacheSize=10*1024, immutableVals=False, 
-                 stringifyKeys=False, **kwargs):
-        SplitDbSet.__init__(self, dbname, FileSet, splitKeys, splitFunc, dbext=dbext,
-                            readOnly=readOnly, clear=clear, cacheSize=cacheSize,
-                            immutableVals=immutableVals, stringifyKeys=stringifyKeys, 
-                            cacheMisses=cacheMisses, **kwargs)
+    def __init__(self, db_name, split_keys, split_func, db_ext=None, read_only=False, 
+                 clear=False, cache_misses=True, cache_size=10*1024, immutable_vals=False, 
+                 stringify_keys=False, **kwargs):
+        SplitDbSet.__init__(self, db_name, FileSet, split_keys, split_func, db_ext=db_ext,
+                            read_only=read_only, clear=clear, cache_size=cache_size,
+                            immutable_vals=immutable_vals, stringify_keys=stringify_keys, 
+                            cache_misses=cache_misses, **kwargs)
 
