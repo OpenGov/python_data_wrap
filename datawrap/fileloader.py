@@ -52,7 +52,7 @@ class FileDataLoader(object):
             else:
                 return [line.split(self.delim) for line in dfile.readlines()]
             
-    def _load_data(self, force_csv=False):
+    def load_data(self, force_csv=False):
         if force_csv or get_extension(self.file_name) == 'csv':
             return self._load_csv()
         else:
@@ -66,7 +66,7 @@ class FileDataLoader(object):
         if self._reader != None:
             return self._reader.__iter__()
         else:
-            return self._load_data().__iter__()
+            return self.load_data().__iter__()
     
     def __enter__(self):
         '''
