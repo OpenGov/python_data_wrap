@@ -6,7 +6,7 @@ import unittest
 import os
 from os.path import dirname
 
-def compareToCSV(file_name, array):
+def compare_to_csv(file_name, array):
     '''
     Helper function which compares the loaded data against another csv.
     '''
@@ -31,7 +31,7 @@ class TableLoaderTest(unittest.TestCase):
     formats.
     '''
     def setUp(self):
-        self.data_dir = os.path.join(dirname(__file__), 'tableLoadData')
+        self.data_dir = os.path.join(dirname(__file__), 'table_load_data')
         self.csv_test = os.path.join(self.data_dir, 'raw', 'csv_test.csv')
         self.csv_master = os.path.join(self.data_dir, 'master', 'csv_master.csv')
         
@@ -48,66 +48,66 @@ class TableLoaderTest(unittest.TestCase):
     
     def test_csv(self):
         data = tableloader.read(self.csv_test)
-        self.assertTrue(compareToCSV(self.csv_master,data[0]))
+        self.assertTrue(compare_to_csv(self.csv_master,data[0]))
     
     def test_content_csv(self):
         fname = self.csv_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compareToCSV(self.csv_master, data[0]))
+            self.assertTrue(compare_to_csv(self.csv_master, data[0]))
        
     def test_xls(self):
         data = tableloader.read(self.xls_test)      
-        self.assertTrue(compareToCSV(self.excel_master1,data[0]))
-        self.assertTrue(compareToCSV(self.excel_master2,data[1]))
-        self.assertTrue(compareToCSV(self.excel_master3,data[2]))
+        self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
         
     def test_content_xls(self):
         fname = self.xls_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compareToCSV(self.excel_master1,data[0]))
-            self.assertTrue(compareToCSV(self.excel_master2,data[1]))
-            self.assertTrue(compareToCSV(self.excel_master3,data[2]))
+            self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
+            self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
+            self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
         
     def test_xlsx(self):
         data = tableloader.read(self.xlsx_test) 
-        self.assertTrue(compareToCSV(self.excel_master1,data[0]))
-        self.assertTrue(compareToCSV(self.excel_master2,data[1]))
-        self.assertTrue(compareToCSV(self.excel_master3,data[2]))
+        self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
         
     def test_content_xlsx(self):
         fname = self.xlsx_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compareToCSV(self.excel_master1,data[0]))
-            self.assertTrue(compareToCSV(self.excel_master2,data[1]))
-            self.assertTrue(compareToCSV(self.excel_master3,data[2]))
+            self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
+            self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
+            self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
         
     def test_function_xls(self):
         data = tableloader.read(self.xls_formula_test)
-        self.assertTrue(compareToCSV(self.formula_master,data[0]))
+        self.assertTrue(compare_to_csv(self.formula_master,data[0]))
         
     def test_content_function_xls(self):
         fname = self.xls_formula_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compareToCSV(self.formula_master,data[0]))
+            self.assertTrue(compare_to_csv(self.formula_master,data[0]))
        
     def test_function_xlsx(self):
         data = tableloader.read(self.xlsx_formula_test)
-        self.assertTrue(compareToCSV(self.formula_master,data[0]))
+        self.assertTrue(compare_to_csv(self.formula_master,data[0]))
         
     def test_content_function_xlsx(self):
         fname = self.xlsx_formula_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
             data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compareToCSV(self.formula_master,data[0]))
+            self.assertTrue(compare_to_csv(self.formula_master,data[0]))
 
 if __name__ == '__main__': 
     unittest.main()

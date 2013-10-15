@@ -47,4 +47,4 @@ selenium-server*.jar
 #*#
 
 # temp data
-tests/fileDB
+tests/file_db

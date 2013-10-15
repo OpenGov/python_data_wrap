@@ -35,7 +35,7 @@ class DBWrapTest(object):
     Base class used to define DBWrap tests.
     '''
     def setUp(self):
-        self.data_dir = os.path.join(dirname(__file__), 'fileDB')
+        self.data_dir = os.path.join(dirname(__file__), 'file_db')
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
         
