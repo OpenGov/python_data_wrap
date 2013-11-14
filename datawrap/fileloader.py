@@ -1,8 +1,8 @@
 import csv, os
 
-def getExtension(filename):
+def get_extension(file_name):
     '''Gets the extension from a file name'''
-    name, extension = os.path.splitext(filename)
+    name, extension = os.path.splitext(file_name)
     return extension[1:]
 
 class FileDataLoader(object):
@@ -14,49 +14,49 @@ class FileDataLoader(object):
     tokens represents a single line.
     
     Arsg:
-        filename: The filename being requested for loading
-        filedir: The directory of the file (optional)
+        file_name: The file_name being requested for loading
+        file_dir: The directory of the file (optional)
         delimiter: The delimiter to split lines (default ',' for csv)
     
     Return Format:
         list[ ('line as string' or 'list[ tokens ]') ]
     '''
-    def __init__(self, filename, filedir='', delimiter=None):
-        self.filename = filename
-        self.filedir = filedir
+    def __init__(self, file_name, file_dir='', delimiter=None):
+        self.file_name = file_name
+        self.file_dir = file_dir
         self.delim = delimiter
         self._file = None
         self._reader = None
         
-    def _getDelim(self):
+    def _get_delim(self):
         return "," if self.delim == None else self.delim
     
-    def _getFullPath(self):
-        if self.filedir and not os.path.isabs(self.filename):
-            return os.path.join(self.filedir, self.filename)
+    def _get_full_path(self):
+        if self.file_dir and not os.path.isabs(self.file_name):
+            return os.path.join(self.file_dir, self.file_name)
         else:
-            return self.filename
+            return self.file_name
         
-    def _loadCSV(self):
-        fullname = self._getFullPath()
-        delimiter = self._getDelim()
-        with open(fullname, 'rb') as dfile:
+    def _load_csv(self):
+        full_name = self._get_full_path()
+        delimiter = self._get_delim()
+        with open(full_name, 'rb') as dfile:
             reader = csv.reader(dfile, delimiter=delimiter)
             return [line for line in reader]
         
-    def _loadRaw(self):
-        fullname = self._getFullPath()
-        with open(fullname, 'rb') as dfile:
+    def _load_raw(self):
+        full_name = self._get_full_path()
+        with open(full_name, 'rb') as dfile:
             if self.delim == None:
                 return dfile.readlines()
             else:
                 return [line.split(self.delim) for line in dfile.readlines()]
             
-    def loadData(self, forceCSV=False):
-        if forceCSV or getExtension(self.filename) == 'csv':
-            return self._loadCSV()
+    def load_data(self, force_csv=False):
+        if force_csv or get_extension(self.file_name) == 'csv':
+            return self._load_csv()
         else:
-            return self._loadRaw()
+            return self._load_raw()
         
     def __iter__(self):
         '''
@@ -66,7 +66,7 @@ class FileDataLoader(object):
         if self._reader != None:
             return self._reader.__iter__()
         else:
-            return self.loadData().__iter__()
+            return self.load_data().__iter__()
     
     def __enter__(self):
         '''
@@ -76,10 +76,10 @@ class FileDataLoader(object):
         
         The file will be safely closed on exit from this block.
         '''
-        fullname = self._getFullPath()
+        full_name = self._get_full_path()
         # Open file gingerly
         try:
-            self._file = open(fullname, 'rb')
+            self._file = open(full_name, 'rb')
         # Failed, close file and ignore errors
         except:
             try: self._file.close()
@@ -87,8 +87,8 @@ class FileDataLoader(object):
             finally: self._file = None
         # If file load is all good, set our reader
         else:
-            if getExtension(self.filename) == 'csv':
-                delimiter = self._getDelim()
+            if get_extension(self.file_name) == 'csv':
+                delimiter = self._get_delim()
                 self._reader = csv.reader(self._file, delimiter=delimiter)
             else:
                 self._reader = self._file

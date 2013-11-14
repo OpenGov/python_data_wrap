@@ -8,9 +8,9 @@ from datawrap import fileloader
 # TODO implement
 class DataLoadTest(unittest.TestCase):
     def setUp(self):
-        self.datadir = os.path.join(dirname(__file__), 'fileLoadData')
+        self.data_dir = os.path.join(dirname(__file__), 'file_load_data')
 
-    def testNotImplemented(self):
+    def test_not_implemented(self):
         pass
 
 if __name__ == "__main__":

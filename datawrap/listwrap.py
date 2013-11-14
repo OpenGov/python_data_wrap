@@ -1,14 +1,14 @@
 import collections
 
-def nonStrLen(item):
+def non_str_len(item):
     '''
     Helper function for checking non-string item length
     '''
     if isinstance(item, basestring):
-        raise TypeError()
+        raise TypeError('String passed to non_str_len')
     return len(item)
 
-def hasLen(item):
+def has_len(item):
     '''
     Helper function for determining if object has __len__ defined
     '''
@@ -18,17 +18,17 @@ def hasLen(item):
     except:
         return False
 
-def nonStrLenNoThrow(item):
+def non_str_len_no_throw(item):
     '''
     Helper function for checking non-string item length.
     Returns None on failure instead of throwing a TypeError.
     '''
     try:
-        return nonStrLen(item)
+        return non_str_len(item)
     except TypeError:
         return 0
     
-def getNonNegativeIndex(index, length):
+def get_non_negative_index(index, length):
     '''
     Converts negative indices to positive ones
     '''
@@ -40,61 +40,61 @@ def getNonNegativeIndex(index, length):
             index = 0
     return index
 
-def isSliceOrDimRange(key):
+def is_slice_or_dim_range(key):
     '''
     Checks if a particular key is a slice or DimensionRange
     '''
     return isinstance(key, (slice, DimensionRange))
 
-def isSliceOrDimRangeRequest(key, depth=0):
+def is_slice_or_dim_range_request(key, depth=0):
     '''
     Checks if a particular key is a slice, DimensionRange or
     list of those types
     '''
     # Slice, DimensionRange, or list of those elements
-    return (isSliceOrDimRange(key) or
+    return (is_slice_or_dim_range(key) or
             # Don't check more than the first depth
-            (depth == 0 and nonStrLenNoThrow(key) > 0 and 
-             all(isSliceOrDimRangeRequest(subkey, depth+1) for subkey in key)))
+            (depth == 0 and non_str_len_no_throw(key) > 0 and 
+             all(is_slice_or_dim_range_request(subkey, depth+1) for subkey in key)))
 
-def getRestrictedIndex(index, length, lengthIndexAllowed=True):
+def get_restricted_index(index, length, length_index_allowed=True):
     '''
     Converts negative indices to positive ones and indices above length to length or 
     length-1 depending on lengthAllowed.
     '''
     if index and index >= length:
-        index = length if lengthIndexAllowed else length-1
-    return getNonNegativeIndex(index, length)
+        index = length if length_index_allowed else length-1
+    return get_non_negative_index(index, length)
 
-def getTrueSlice(dims, dataLen):
+def get_true_slice(dims, data_len):
     '''
     Converts various size tuples or slices representing data ranges returns a 
     new slice with all non-negative (or None) values.
     '''
-    rangeLen = nonStrLenNoThrow(dims)
+    rangeLen = non_str_len_no_throw(dims)
     
     # Get the range qualifier for length
     if isinstance(dims, slice):
-        start = getRestrictedIndex(int(dims.start), dataLen) if dims.start != None else dims.start
-        stop = getRestrictedIndex(int(dims.stop), dataLen) if dims.stop != None else dims.stop
-        step = getRestrictedIndex(int(dims.step), dataLen) if dims.step != None else dims.step
+        start = get_restricted_index(int(dims.start), data_len) if dims.start != None else dims.start
+        stop = get_restricted_index(int(dims.stop), data_len) if dims.stop != None else dims.stop
+        step = get_restricted_index(int(dims.step), data_len) if dims.step != None else dims.step
     elif rangeLen > 3:
         raise AttributeError(str(dims)+' length is > 3')
     elif rangeLen == 3:
-        start = getRestrictedIndex(int(dims[0]), dataLen) if dims[0] != None else dims[0]
-        stop = getRestrictedIndex(int(dims[1]), dataLen) if dims[1] != None else dims[1]
-        step = getRestrictedIndex(int(dims[2]), dataLen) if dims[2] != None else dims[2]
+        start = get_restricted_index(int(dims[0]), data_len) if dims[0] != None else dims[0]
+        stop = get_restricted_index(int(dims[1]), data_len) if dims[1] != None else dims[1]
+        step = get_restricted_index(int(dims[2]), data_len) if dims[2] != None else dims[2]
     elif rangeLen == 2:
-        start = getRestrictedIndex(int(dims[0]), dataLen) if dims[0] != None else dims[0]
-        stop = getRestrictedIndex(int(dims[1]), dataLen) if dims[1] != None else dims[1]
+        start = get_restricted_index(int(dims[0]), data_len) if dims[0] != None else dims[0]
+        stop = get_restricted_index(int(dims[1]), data_len) if dims[1] != None else dims[1]
         step = None
     elif rangeLen == 1:
-        start = getRestrictedIndex(int(dims[0]), dataLen) if dims[0] != None else dims[0]
-        stop = getRestrictedIndex(int(dims[0]), dataLen)+1 if dims[0] != None else dims[0]
+        start = get_restricted_index(int(dims[0]), data_len) if dims[0] != None else dims[0]
+        stop = get_restricted_index(int(dims[0]), data_len)+1 if dims[0] != None else dims[0]
         step = None
     elif dims != None:
-        start = getRestrictedIndex(int(dims), dataLen) if dims != None else dims
-        stop = getRestrictedIndex(int(dims), dataLen)+1 if dims != None else dims
+        start = get_restricted_index(int(dims), data_len) if dims != None else dims
+        stop = get_restricted_index(int(dims), data_len)+1 if dims != None else dims
         step = None
     else:
         start = None
@@ -111,13 +111,13 @@ class DimensionRange(collections.MutableMapping):
     an application for a depth of dimensions.
     
     Args:
-        orderedRanges: The arguments which provide the ordered 
+        ordered_ranges: The arguments which provide the ordered 
             restrictions at each sub-dimension. 
     '''
-    def __init__(self, *orderedRanges):
-        self.orderedRanges = []
-        for rangeRestriction in orderedRanges:
-            self.addRange(rangeRestriction)
+    def __init__(self, *ordered_ranges):
+        self.ordered_ranges = []
+        for range_restriction in ordered_ranges:
+            self.add_range(range_restriction)
             
     def __add__(self, other):
         '''
@@ -132,112 +132,112 @@ class DimensionRange(collections.MutableMapping):
     def __iadd__(self, other):
         self.__init__(self + other)
         
-    def getCombinedDimensionRange(self, other):
+    def get_combined_dimension_range(self, other):
         '''Same as __add__(self, other)'''
         return self + other
             
-    def sliceOnLength(self, dataLen, *addSlices):
+    def slice_on_length(self, data_len, *addSlices):
         '''
         Returns a slice representing the dimension range
-        restrictions applied to a list of length dataLen.
+        restrictions applied to a list of length data_len.
         
         If addSlices contains additional slice requirements,
         they are processed in the order they are given.
         '''
-        if len(self.orderedRanges) + len(addSlices) == 0:
+        if len(self.ordered_ranges) + len(addSlices) == 0:
             return slice(None,None,None)
-        ranges = self.orderedRanges
+        ranges = self.ordered_ranges
         if len(addSlices) > 0:
-            ranges = ranges + DimensionRange(*addSlices).orderedRanges
-        return self._combineListsOfRangesOnLength(dataLen, *ranges)
+            ranges = ranges + DimensionRange(*addSlices).ordered_ranges
+        return self._combine_lists_of_ranges_on_length(data_len, *ranges)
         
-    def _combineRangesOnLength(self, dataLen, first, second):
+    def _combine_ranges_on_length(self, data_len, first, second):
         '''
         Combines a first range with a second range, where the second
         range is considered within the scope of the first.
         '''
-        first = getTrueSlice(first, dataLen)
-        second = getTrueSlice(second, dataLen)
-        finalStart, finalStep, finalStop = (None, None, None)
+        first = get_true_slice(first, data_len)
+        second = get_true_slice(second, data_len)
+        final_start, final_step, final_stop = (None, None, None)
         
         # Get our start
         if first.start == None and second.start == None:
-            finalStart = None
+            final_start = None
         else:
-            finalStart = (first.start if first.start else 0)+(second.start if second.start else 0)
+            final_start = (first.start if first.start else 0)+(second.start if second.start else 0)
             
         # Get our stop
         if second.stop == None:
-            finalStop = first.stop
+            final_stop = first.stop
         elif first.stop == None:
-            finalStop = (first.start if first.start else 0) + second.stop
+            final_stop = (first.start if first.start else 0) + second.stop
         else:
-            finalStop = min(first.stop, (first.start if first.start else 0) + second.stop)
+            final_stop = min(first.stop, (first.start if first.start else 0) + second.stop)
             
         # Get our step
         if first.step == None and second.step == None:
-            finalStep = None
+            final_step = None
         else:
-            finalStep = (first.step if first.step else 1)*(second.step if second.step else 1)
+            final_step = (first.step if first.step else 1)*(second.step if second.step else 1)
             
         # If we have a start above our stop, set them to be equal
-        if finalStart > finalStop:
-            finalStart = finalStop
+        if final_start > final_stop:
+            final_start = final_stop
         
-        return slice(finalStart, finalStop, finalStep)
+        return slice(final_start, final_stop, final_step)
         
-    def _combineListsOfRangesOnLength(self, dataLen, first, *rangelist):
+    def _combine_lists_of_ranges_on_length(self, data_len, first, *range_list):
         '''
         Combines an arbitrary length list of ranges into a single slice.
         '''
-        currentrange = first
-        for nextrange in rangelist:
-            currentrange = self._combineRangesOnLength(dataLen, currentrange, nextrange)
-        return currentrange
+        current_range = first
+        for next_range in range_list:
+            current_range = self._combine_ranges_on_length(data_len, current_range, next_range)
+        return current_range
         
     def __getitem__(self, index):
-        return self.orderedRanges[index]
+        return self.ordered_ranges[index]
     
-    def _slicify(self, rangeRestriction):
-        if isinstance(rangeRestriction, slice):
-            return rangeRestriction
-        elif nonStrLenNoThrow(rangeRestriction) == 0:
-            return slice(rangeRestriction, rangeRestriction+1, None)
-        elif len(rangeRestriction) > 0:
-            return slice(*rangeRestriction)
+    def _slicify(self, range_restriction):
+        if isinstance(range_restriction, slice):
+            return range_restriction
+        elif non_str_len_no_throw(range_restriction) == 0:
+            return slice(range_restriction, range_restriction+1, None)
+        elif len(range_restriction) > 0:
+            return slice(*range_restriction)
         else:
             return slice(None, None, None)
         
     def __str__(self):
-        return "DimensionRange" + self.orderedRanges.__str__()
+        return "DimensionRange" + self.ordered_ranges.__str__()
     
     def __repr__(self):
-        return "DimensionRange" + self.orderedRanges.__repr__()
+        return "DimensionRange" + self.ordered_ranges.__repr__()
     
-    def addRange(self, rangeRestriction):
+    def add_range(self, range_restriction):
         # Check for nested ranges
-        if isinstance(rangeRestriction, DimensionRange):
-            for rangeRestriction in rangeRestriction.orderedRanges:
-                self.addRange(rangeRestriction)
+        if isinstance(range_restriction, DimensionRange):
+            for range_restriction in range_restriction.ordered_ranges:
+                self.add_range(range_restriction)
         else:
-            slicedRange = self._slicify(rangeRestriction)
+            sliced_range = self._slicify(range_restriction)
             # If the slice is a pass all, don't bother appending
-            if (slicedRange.start != None or
-                slicedRange.stop != None or
-                slicedRange.step != None):
-                self.orderedRanges.append(slicedRange)
+            if (sliced_range.start != None or
+                sliced_range.stop != None or
+                sliced_range.step != None):
+                self.ordered_ranges.append(sliced_range)
     
-    def __setitem__(self, index, rangeRestriction):
-        self.orderedRanges[index] = self._slicify(rangeRestriction)
+    def __setitem__(self, index, range_restriction):
+        self.ordered_ranges[index] = self._slicify(range_restriction)
         
     def __len__(self):
-        return self.orderedRanges.__len__()
+        return self.ordered_ranges.__len__()
     
     def __delitem__(self, index):
-        self.orderedRanges.__delitem__(index)
+        self.ordered_ranges.__delitem__(index)
         
     def __iter__(self):
-        return self.orderedRanges.__iter__()
+        return self.ordered_ranges.__iter__()
 
 class ListIter(object):
     '''
@@ -272,10 +272,10 @@ class FixedListSubset(collections.Sequence):
     
     Args:
         data: Fixed length list of arbitrary data.
-        dimensionRanges: An arbitrary number of dimension restrictions 
+        dimension_ranges: An arbitrary number of dimension restrictions 
             that are combined to form the subset.
     '''
-    def __init__(self, data, *dimensionRanges):
+    def __init__(self, data, *dimension_ranges):
         '''
         Assumes data is of fixed length. The parameter dataRange can be an 
         Integer or a tuple of Integers (or None for full range) representing 
@@ -287,26 +287,26 @@ class FixedListSubset(collections.Sequence):
         self.builder = type(self)
         # Check for assignment from another FixedListSubset
         if isinstance(data, FixedListSubset):
-            self._dimRanges = self._combineDimensionLists(data._dimRanges, dimensionRanges)
+            self._dim_ranges = self._combine_dimension_lists(data._dim_ranges, dimension_ranges)
             self._data = data._data
-        # Otherwise construct our dimRanges
+        # Otherwise construct our dim_ranges
         else:
             self._data = data
-            self._dimRanges = []
+            self._dim_ranges = []
             # Convert the dimension inputs into DimensionRange objects
-            for dimrange in dimensionRanges:
-                self._dimRanges.append(DimensionRange(dimrange))
-        dataLen = len(self._data)
+            for dim_range in dimension_ranges:
+                self._dim_ranges.append(DimensionRange(dim_range))
+        data_len = len(self._data)
         
-        if len(self._dimRanges) > 0:
-            self.range = self._dimRanges[0].sliceOnLength(dataLen)
+        if len(self._dim_ranges) > 0:
+            self.range = self._dim_ranges[0].slice_on_length(data_len)
         else:
             self.range = slice(None, None, None)
             
         # Get the length of the data
         start = self.range.start if self.range.start != None else 0
         # Check stop
-        stop = self.range.stop if self.range.stop != None else dataLen
+        stop = self.range.stop if self.range.stop != None else data_len
         # Check step
         step = self.range.step if self.range.step != None else 1
         # Store our length, add step-1 to account for rounding
@@ -315,115 +315,115 @@ class FixedListSubset(collections.Sequence):
     def __len__(self):
         return self._length
     
-    def _combineDimensionLists(self, firstDims, secondDims):
-        # Format firstDims and secondDims as lists
-        firstDimsLen = nonStrLenNoThrow(firstDims)
-        if not hasLen(firstDims) or isSliceOrDimRange(firstDims):
-            firstDims = [firstDims]
-            firstDimsLen = 1
-        secondDimsLen = nonStrLenNoThrow(secondDims)
-        if not hasLen(firstDims) or isSliceOrDimRange(secondDims):
-            secondDims = [secondDims]
-            secondDimsLen = 1
+    def _combine_dimension_lists(self, first_dims, second_dims):
+        # Format first_dims and second_dims as lists
+        first_dims_len = non_str_len_no_throw(first_dims)
+        if not has_len(first_dims) or is_slice_or_dim_range(first_dims):
+            first_dims = [first_dims]
+            first_dims_len = 1
+        second_dims_len = non_str_len_no_throw(second_dims)
+        if not has_len(first_dims) or is_slice_or_dim_range(second_dims):
+            second_dims = [second_dims]
+            second_dims_len = 1
         
         # Our new list of dimension ranges
-        constructedDims = []
+        constructed_dims = []
         
         # Rebuild the dimensions list for each dimension
-        for i in xrange(max(firstDimsLen, secondDimsLen)):
-            updatedDims = None
-            if i < firstDimsLen:
-                if i < secondDimsLen:
-                    updatedDims = DimensionRange(firstDims[i]) + DimensionRange(secondDims[i])
+        for i in xrange(max(first_dims_len, second_dims_len)):
+            updated_dims = None
+            if i < first_dims_len:
+                if i < second_dims_len:
+                    updated_dims = DimensionRange(first_dims[i]) + DimensionRange(second_dims[i])
                 else:
-                    updatedDims = DimensionRange(firstDims[i])
-            elif i < secondDimsLen:
-                updatedDims = DimensionRange(secondDims[i])
+                    updated_dims = DimensionRange(first_dims[i])
+            elif i < second_dims_len:
+                updated_dims = DimensionRange(second_dims[i])
             else:
                 # Impossible scenario
                 # So just stop if this happens somehow
                 break
-            constructedDims.append(updatedDims)
+            constructed_dims.append(updated_dims)
             
-        return constructedDims
+        return constructed_dims
     
-    def _getSingleDepth(self, multiIndex):
+    def _get_single_depth(self, multi_index):
         '''
         Helper method for determining how many single index entries there 
         are in a particular multi-index
         '''
-        singleDepth = 0
-        for subind in multiIndex:
-            if isSliceOrDimRange(subind):
+        single_depth = 0
+        for subind in multi_index:
+            if is_slice_or_dim_range(subind):
                 break
-            singleDepth += 1
-        return singleDepth
+            single_depth += 1
+        return single_depth
     
-    def _getSliceRequestData(self, index):
+    def _get_slice_request_data(self, index):
         '''
         Helper function which implements multi index requests for __getitem__.
         '''
         # Do a check on list indices for early error detection
-        if not isSliceOrDimRange(index):
-            singleDepth = self._getSingleDepth(index)
-            # Single value indices for first singleDepth values
-            if singleDepth > 0:
+        if not is_slice_or_dim_range(index):
+            single_depth = self._get_single_depth(index)
+            # Single value indices for first single_depth values
+            if single_depth > 0:
                 # We have integer request first
-                subindicies = index[:singleDepth]
+                subindicies = index[:single_depth]
                 sublist = self
                 # Use the other side of __getitem__ to grab subindices
                 for sind in subindicies:
                     sublist = sublist[sind]
                 # If we still have some index requests left or dimension
                 # restrictions, then return a FixedListSubset
-                if singleDepth < len(index) or isinstance(sublist, FixedListSubset):
-                    newDimRanges = self._combineDimensionLists(self._dimRanges, index)
-                    return self.builder(sublist, *newDimRanges[singleDepth:])
+                if single_depth < len(index) or isinstance(sublist, FixedListSubset):
+                    new_dim_ranges = self._combine_dimension_lists(self._dim_ranges, index)
+                    return self.builder(sublist, *new_dim_ranges[single_depth:])
                 # Otherwise our sublist is actually an element of the
                 # original data, so just return it
                 else:
                     return sublist
-        newDimRanges = self._combineDimensionLists(self._dimRanges, index)
-        return self.builder(self._data, *newDimRanges)
+        new_dim_ranges = self._combine_dimension_lists(self._dim_ranges, index)
+        return self.builder(self._data, *new_dim_ranges)
     
-    def _getSingleIndexRequest(self, index, setToValue=False, value=None):
+    def _get_single_index_request(self, index, set_to_value=False, value=None):
         '''
         Helper function which implements single index requests for __getitem__.
         '''
-        adjustedIndex = index
+        adjusted_index = index
         # Multiply by step length
         if self.range.step:
             step = self.range.step
-            adjustedIndex *= self.range.step
+            adjusted_index *= self.range.step
         else:
             step = 1
             
         # Adjust for negative indicies
-        adjustedIndex = getNonNegativeIndex(adjustedIndex, self._length)
+        adjusted_index = get_non_negative_index(adjusted_index, self._length)
         # Push forward by start length
         if self.range.start != None:
-            adjustedIndex += self.range.start
+            adjusted_index += self.range.start
         # Push forward by start length
-        stopIndex = self.range.stop if self.range.stop != None else self._length*step
-        if adjustedIndex > stopIndex:
+        stop_index = self.range.stop if self.range.stop != None else self._length*step
+        if adjusted_index > stop_index:
             raise IndexError(index)
-        elem = self._data[adjustedIndex]
+        elem = self._data[adjusted_index]
         # Check if we have further dimension requirements
         # NOTE: if we're given dimensions for non-dimensional data, 
         # this will blow up with an IndexError -- user should
         # not define this dimension with any restrictions
-        if len(self._dimRanges) > 1:
-            if not hasLen(elem):
+        if len(self._dim_ranges) > 1:
+            if not has_len(elem):
                 # We throw an IndexError instead of an AttributeError
                 # because if can be caused by either sublist requests
                 # or a bad constructor, and it's usually the former.
-                raise IndexError("Element restricted by DimensionRanges "+
-                                 str(self._dimRanges[1:])+" is not subscriptable: "+
+                raise IndexError("Element restricted by dimension_ranges "+
+                                 str(self._dim_ranges[1:])+" is not subscriptable: "+
                                  "Dimension cannot be applied to elements with no len()")
-            return self.builder(elem, *self._dimRanges[1:])
+            return self.builder(elem, *self._dim_ranges[1:])
         else:
-            if setToValue:
-                self._data[adjustedIndex] = value
+            if set_to_value:
+                self._data[adjusted_index] = value
             return elem
         
     def __getitem__(self, index):
@@ -434,11 +434,11 @@ class FixedListSubset(collections.Sequence):
         object wrapper for a particular index request.
         '''
         # Check if we have a list of dimensions or a slice request
-        if nonStrLenNoThrow(index) > 0 or isSliceOrDimRange(index):
-            return self._getSliceRequestData(index)
+        if non_str_len_no_throw(index) > 0 or is_slice_or_dim_range(index):
+            return self._get_slice_request_data(index)
         # Do a normal get request on an index
         else:
-            return self._getSingleIndexRequest(index)
+            return self._get_single_index_request(index)
     
     def __iter__(self):
         # Default iterator doesn't work
@@ -447,16 +447,16 @@ class FixedListSubset(collections.Sequence):
     def __str__(self):
         # This can be expensive for high dimension lists.
         if self._length <= 100:
-            return str(self.compressRangesToLists())
+            return str(self.compress_ranges_to_lists())
         else:
-            listString = str(self[:100].compressRangesToLists())
+            listString = str(self[:100].compress_ranges_to_lists())
             return listString[:-1] + ", ... ]"
         
     def __repr__(self):
         # This can be expensive for high dimension lists.
-        return repr(self.compressRangesToLists())
+        return repr(self.compress_ranges_to_lists())
     
-    def compressRangesToLists(self):
+    def compress_ranges_to_lists(self):
         '''
         Converts the internal dimension ranges on lists into
         list of the restricted size. Thus all dimension rules
@@ -466,32 +466,32 @@ class FixedListSubset(collections.Sequence):
         clist = []
         for elem in self:
             if isinstance(elem, FixedListSubset):
-                clist.append(elem.compressRangesToLists())
+                clist.append(elem.compress_ranges_to_lists())
             else:
                 clist.append(elem)
         return clist
     
     '''
-    Acts much like compressRangesToLists except it also performs a deepcopy 
+    Acts much like compress_ranges_to_lists except it also performs a deepcopy 
     on the underlying data. Thus the return value is a true copy of original data.
     ''' 
-    def deepCopyAsList(self, memo=None):
+    def deep_copy_as_list(self, memo=None):
         import copy
         if memo == None:
             memo = {}
         clist = []
         for elem in self:
             if isinstance(elem, FixedListSubset):
-                clist.append(elem.deepCopyAsList(memo))
+                clist.append(elem.deep_copy_as_list(memo))
             else:
                 clist.append(copy.deepcopy(elem, memo))
         return clist
     
     def __copy__(self):
-        return self.builder(self.compressRangesToLists())
+        return self.builder(self.compress_ranges_to_lists())
     
     def __deepcopy__(self, memo):
-        return self.builder(self.deepCopyAsList(memo))
+        return self.builder(self.deep_copy_as_list(memo))
     
 class MutableListSubset(collections.MutableSequence, FixedListSubset):
     '''
@@ -513,11 +513,11 @@ class MutableListSubset(collections.MutableSequence, FixedListSubset):
     
     Args:
         data: Fixed length list of arbitrary data.
-        dimensionRanges: An arbitrary number of dimension restrictions that are 
+        dimension_ranges: An arbitrary number of dimension restrictions that are 
             combined to form the subset.
     '''
     def __setitem__(self, index, value):
-        self._getSingleIndexRequest(index, True, value)
+        self._get_single_index_request(index, True, value)
     
     def insert(self, index, value):
         raise NotImplementedError("Cannot insert into a List Subset")
@@ -540,33 +540,33 @@ class ZeroList(collections.Sequence):
     def __len__(self):
         return self._length
     
-    def _generateSplice(self, sliceInd):
+    def _generate_splice(self, slice_ind):
         '''
         Creates a splice size version of the ZeroList
         '''
-        stepsize = sliceInd.step if sliceInd.step else 1
+        step_size = slice_ind.step if slice_ind.step else 1
         # Check for each of the four possible scenarios
-        if sliceInd.start != None:
-            if sliceInd.stop != None:
-                newListLen = ((getNonNegativeIndex(sliceInd.stop, self._length) - 
-                               getNonNegativeIndex(sliceInd.start, self._length)) / stepsize)
+        if slice_ind.start != None:
+            if slice_ind.stop != None:
+                newListLen = ((get_non_negative_index(slice_ind.stop, self._length) - 
+                               get_non_negative_index(slice_ind.start, self._length)) / step_size)
             else:
                 newListLen = ((self._length - 
-                               getNonNegativeIndex(sliceInd.start, self._length)) / stepsize)
+                               get_non_negative_index(slice_ind.start, self._length)) / step_size)
         else:
-            if sliceInd.stop != None:
-                newListLen = ((getNonNegativeIndex(sliceInd.stop, self._length)) / stepsize)
+            if slice_ind.stop != None:
+                newListLen = ((get_non_negative_index(slice_ind.stop, self._length)) / step_size)
             else:
-                newListLen = (self._length / stepsize)
+                newListLen = (self._length / step_size)
                 
         return ZeroList(newListLen)
         
     def __getitem__(self, index):
         # Check for slices
         if isinstance(index, slice):
-            return self._generateSplice(index)
+            return self._generate_splice(index)
                 
-        index = getNonNegativeIndex(index, self._length)
+        index = get_non_negative_index(index, self._length)
         if index >= self._length:
             raise IndexError(index)
         return 0

@@ -1,24 +1,24 @@
 # This import fixes sys.path issues
 import bootstrap
 import unittest
-from datawrap.keydefaultdict import keydefaultdict
+from datawrap.keydefaultdict import KeyDefaultDict
 
 class KeyDefaultDictTest(unittest.TestCase):
     '''
-    Performs basic keydefaultdict tests where the default function
+    Performs basic KeyDefaultDict tests where the default function
     takes the key as an argument to generate new values.
     '''
-    def testKeyDefaults(self):
+    def test_key_defaults(self):
         inputs = { k : k*2 for k in range(100)}
         for k in inputs.keys():
             inputs[str(k)] = str(k*2)
         
-        repeatkey = keydefaultdict(lambda k: k)
+        repeatkey = KeyDefaultDict(lambda k: k)
         for k in inputs:
             self.assertEquals(repeatkey[k], k)
         
         # Reset
-        repeatkey = keydefaultdict(lambda k: k)
+        repeatkey = KeyDefaultDict(lambda k: k)
         for k,v in inputs.iteritems():
             repeatkey[k] = v
             

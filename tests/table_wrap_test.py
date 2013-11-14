@@ -13,7 +13,7 @@ class TableWrapTest(unittest.TestCase):
         self.table = tablewrap.Table([[1,2,3,4,5], [6,7,8,9,10], ['a','b','c','d','e']])
         self.transpose = tablewrap.TableTranpose(self.table)
 
-    def testTableTranpose(self):
+    def test_table_transpose(self):
         self.assertEqual(self.transpose[0][0], self.table[0][0])
         self.assertEqual(self.transpose[4][0], self.table[0][4])
         self.assertEqual(self.transpose[0][2], self.table[2][0])
@@ -25,7 +25,7 @@ class TableWrapTest(unittest.TestCase):
             for r,elem in enumerate(col):
                 self.assertEqual(elem, self.table[r][c])
                 
-    def testTableSlice(self):
+    def test_table_slice(self):
         # Try copy slice requests
         self.assertEqual(self.transpose[:][0][0], self.table[0][0])
         self.assertEqual(self.transpose[:][4][0], self.table[0][4])
@@ -56,22 +56,22 @@ class TableWrapTest(unittest.TestCase):
         self.assertEqual(translice[0][0], self.table[0][tslice][0])
         self.assertEqual(translice[0][2], self.table[2][tslice][0])
     
-    def testTableTransposeExceptions(self):
+    def test_table_transpose_exceptions(self):
         # Check that valid finds bad tables
-        badTable = [[1, 2, 3], ['a', 'b'], [4, 5, 6]]
-        self.assertRaises(ValueError, lambda: tablewrap.Table(badTable))
-        self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(badTable))
+        bad_table = [[1, 2, 3], ['a', 'b'], [4, 5, 6]]
+        self.assertRaises(ValueError, lambda: tablewrap.Table(bad_table))
+        self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(bad_table))
         
-        badTable = [[1], ['a', 'b'], [4, 5, 6]]
-        self.assertRaises(ValueError, lambda: tablewrap.Table(badTable))
-        self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(badTable))
+        bad_table = [[1], ['a', 'b'], [4, 5, 6]]
+        self.assertRaises(ValueError, lambda: tablewrap.Table(bad_table))
+        self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(bad_table))
         
-        badTable = [[1, 2], ['a'], [4]]
-        self.assertRaises(ValueError, lambda: tablewrap.Table(badTable))
-        self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(badTable))
+        bad_table = [[1, 2], ['a'], [4]]
+        self.assertRaises(ValueError, lambda: tablewrap.Table(bad_table))
+        self.assertRaises(ValueError, lambda: tablewrap.TableTranpose(bad_table))
         
-        badTable = [[1, 2], ['a'], [4]]
-        noCheck = tablewrap.TableTranpose(badTable, False)
+        bad_table = [[1, 2], ['a'], [4]]
+        noCheck = tablewrap.TableTranpose(bad_table, False)
         # If we don't do validity checks and instead access a bad index...
         self.assertRaises(IndexError, lambda: noCheck[2][1])
 
