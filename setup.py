@@ -20,7 +20,7 @@ setup(
     author = "Matthew Seal",
     author_email = "mseal@opengov.com",
     description = ("Tools for wrapping data and manipulating it in efficient ways"),
-    install_requires=['xlrd'],
+    install_requires=['redis', 'xlrd'],
     packages=['datawrap'],
     test_suite = 'tests',
     zip_safe = False,
