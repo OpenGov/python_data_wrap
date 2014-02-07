@@ -1,4 +1,4 @@
-import collections, shelve, os
+import collections, os, shelve
 
 def get_default_file_ext():
     '''
@@ -93,6 +93,9 @@ class UnorderedCachedDict(collections.MutableMapping):
         with the core database.
         '''
         return self._cache
+
+    def _get_item_from_database(self, key):
+        return self._database.__getitem__(key)
     
     def __getitem__(self, key):
         '''
@@ -105,7 +108,7 @@ class UnorderedCachedDict(collections.MutableMapping):
             val = self._cache.__getitem__(key)
         except KeyError:
             try:
-                val = self._database.__getitem__(key)
+                val = self._get_item_from_database(key)
             except KeyError: pass
             if val != None or self._cache_misses:
                 self._insert_cache(key, val, True)
@@ -240,6 +243,7 @@ class UnorderedCachedDict(collections.MutableMapping):
     def __del__(self):
         # Close if we're being collected
         self.close()
+    
         
 class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
     '''
