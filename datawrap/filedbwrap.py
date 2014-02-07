@@ -243,10 +243,6 @@ class UnorderedCachedDict(collections.MutableMapping):
     def __del__(self):
         # Close if we're being collected
         self.close()
-
-    @property
-    def n_queued(self):
-        return len(self._wqueue)
     
         
 class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):

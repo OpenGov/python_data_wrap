@@ -1,10 +1,13 @@
+import collections
+
 from redis import StrictRedis
 
 
 DEFAULT_BATCH_SIZE = 1024
 
 
-class RedisCacheDict(StrictRedis):
+# TODO Eventually extend the RedisCacheDict from UnorderedCacheDict
+class RedisCacheDict(StrictRedis, collections.MutableMapping):
     '''
     This class provides an in-memory ache wrapper on top of an `StrictRedis`
     redis connection.  The wrapper can be intefaced with similar to a Python
@@ -92,6 +95,12 @@ class RedisCacheDict(StrictRedis):
 
     def __contains__(self, key):
         return self[key] is not None
+
+    def __len__(self):
+        raise NotImplementedError('Not straight forward means of acquiring Redis DB length given the hash abstraction')
+
+    def __iter__(self):
+        raise NotImplementedError('Redis does not supply a cursor for iteration')
 
     @property
     def num_queued_writes(self):
