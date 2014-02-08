@@ -13,7 +13,7 @@ class FileDataLoader(object):
     a list of lists of tokens is returned. Each sublist of
     tokens represents a single line.
     
-    Arsg:
+    Args:
         file_name: The file_name being requested for loading
         file_dir: The directory of the file (optional)
         delimiter: The delimiter to split lines (default ',' for csv)
