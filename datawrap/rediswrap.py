@@ -42,9 +42,10 @@ class RedisCacheDict(StrictRedis, collections.MutableMapping):
         - `host`: host of the Redis server (defaults to `localhost`)
         - `port`: port of the Redis server (defaults to `6379`)
     '''
-    def __init__(self, *args, **kwargs):
+    def __init__(self, value_converter=None, *args, **kwargs):
         self._cache = {}
         self._dirty_keys = set()
+        self.converter = value_converter
 
         StrictRedis.__init__(self, *args, **kwargs)
 
@@ -52,16 +53,16 @@ class RedisCacheDict(StrictRedis, collections.MutableMapping):
         x_key, y_key = self.explode_key(key)
         try:
             val = self._cache[x_key]
-            return val.get(y_key) if y_key else val
+            val = val.get(y_key) if y_key else val
         except KeyError:
             if y_key:
                 val = self.hgetall(x_key)
                 self._cache[x_key] = val
-                return val.get(y_key)
+                val = val.get(y_key)
             else:
                 val = self.get(x_key)
                 self._cache[x_key] = val
-                return val
+        return self.converter(val) if self.converter else val
 
     def __setitem__(self, key, value):
         x_key, y_key = self.explode_key(key)
@@ -70,7 +71,7 @@ class RedisCacheDict(StrictRedis, collections.MutableMapping):
                 d = self._cache[x_key]
                 d[y_key] = value
             except KeyError:
-                self._cache[x_key] = {y_key: value}
+                self._cache[x_key] = { y_key: value }
         else:
             self._cache[x_key] = value
         self._dirty_keys.add(key)
@@ -123,13 +124,15 @@ class RedisCacheDict(StrictRedis, collections.MutableMapping):
 
     @staticmethod
     def explode_key(key):
-        if isinstance(key, tuple):
+        if isinstance(key, basestring):
+            return key, None
+
+        try:
             if len(key) != 2:
-                raise ValueError('Tuple keys must be length 2')
+                raise KeyError('Tuple keys must be length 2')
             return key[0], key[1]
-        elif not isinstance(key, basestring):
-            raise ValueError('Key neither a strong nor a tuple')
-        return key, None
+        except TypeError:
+            raise KeyError('Key is neither a string nor a tuple-like object')
 
     def close(self, **kwargs):
         pass  # No-op .. connections are pooled internally by redis-py
