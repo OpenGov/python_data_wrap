@@ -16,7 +16,7 @@ if (os.path.isdir(dist_dir)):
 
 setup(
     name = "PyDataWrap",
-    version = "1.2.0",
+    version = "1.2.1",
     author = "Matthew Seal",
     author_email = "mseal@opengov.com",
     description = ("Tools for wrapping data and manipulating it in efficient ways"),
