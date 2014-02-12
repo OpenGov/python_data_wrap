@@ -27,27 +27,36 @@ class Table(collections.Sequence):
     this object and the underlying list of lists is that this table
     slices and indexes by reference. Any changes to a slice of the
     table also changes the original table.
+
+    Args:
+        table: 2D table of data (must be rectangular or repair=True).
+        verify: Checks the length of the table's rows for consistency.
+        repair: Repairs any missing elements by inserting Nones
     '''
-    def __init__(self, table, verify=True):
+    def __init__(self, table, verify=True, repair=False):
         '''
         Args:
             table: A 2D table, usually a list of lists.
             verify: Flag for verifying that the table is complete 
                 (all rows have same width).
         '''
+        if repair:
+            squarify_table(table)
+
         self._table = table
         self._length = len(table) if table else 0
         self._width = len(table[0]) if table and table[0] else 0
-        if verify:
+
+        if verify and not repair:
             for row in self._table:
                 if len(row) != self._width:
-                    raise ValueError("Non-rectangular table passed to TableTranpose")
+                    raise ValueError("Non-rectangular table passed to Table")
                 
     def transpose(self):
         '''
         Gets a transpose reference to this table.
         '''
-        return TableTranpose(self, False)
+        return TableTranspose(self, False, False)
         
     def __len__(self):
         return self._length
@@ -61,7 +70,7 @@ class Table(collections.Sequence):
     def __iter__(self):
         return ListIter(self)
 
-class TableTranpose(collections.Sequence):
+class TableTranspose(collections.Sequence):
     '''
     Generates a Transpose Wrapper of a 2D table. The original
     table is not copied. Accesses to rows map to columns and
@@ -73,7 +82,9 @@ class TableTranpose(collections.Sequence):
     for performance reasons, as copying columns is expensive.
     
     Args:
-        table: 2D table of data (must be rectangular).
+        table: 2D table of data (must be rectangular or repair=True).
+        verify: Checks the length of the table's rows for consistency.
+        repair: Repairs any missing elements by inserting Nones
     '''
     class TableTransposeRow(collections.MutableSequence):
         '''
@@ -105,14 +116,18 @@ class TableTranpose(collections.Sequence):
         def __iter__(self):
             return ListIter(self)
     
-    def __init__(self, table, verify=True):
+    def __init__(self, table, verify=True, repair=False):
+        if repair:
+            squarify_table(table)
+
         self._table = table
         self._width = len(table) if table else 0
         self._length = len(table[0]) if table and table[0] else 0
-        if verify:
+
+        if verify and not repair:
             for row in self._table:
                 if len(row) != self._length:
-                    raise ValueError("Non-rectangular table passed to TableTranpose")
+                    raise ValueError("Non-rectangular table passed to TableTranspose")
         
     def __len__(self):
         return self._length
