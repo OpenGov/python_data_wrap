@@ -3,7 +3,6 @@ import re
 import csv
 import os
 from StringIO import StringIO
-from collections import Iterator
 
 # Used throughout -- never changed
 XLSX_EXT_REGEX = re.compile(r'(\.xlsx)\s*$')
