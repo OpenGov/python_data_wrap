@@ -3,13 +3,14 @@ import re
 import csv
 import os
 from StringIO import StringIO
+from collections import Iterator
 
 # Used throughout -- never changed
 XLSX_EXT_REGEX = re.compile(r'(\.xlsx)\s*$')
 XLS_EXT_REGEX = re.compile(r'(\.xls)\s*$')
 CSV_EXT_REGEX = re.compile(r'(\.csv)\s*$')
 
-def read(file_name, file_contents=None):
+def read(file_name, file_contents=None, on_demand=False):
     '''
     Loads an arbitrary file type (xlsx, xls, or csv like) and returns
     a list of 2D tables. For csv files this will be a list of one table,
@@ -22,18 +23,18 @@ def read(file_name, file_contents=None):
             If left as None, then file_name is directly loaded.
     '''
     if re.search(XLSX_EXT_REGEX, file_name):
-        return get_data_xlsx(file_name, file_contents=file_contents)
+        return get_data_xlsx(file_name, file_contents=file_contents, on_demand=on_demand)
     elif re.search(XLS_EXT_REGEX, file_name):
-        return get_data_xls(file_name, file_contents=file_contents)
+        return get_data_xls(file_name, file_contents=file_contents, on_demand=on_demand)
     elif re.search(CSV_EXT_REGEX, file_name):
-        return get_data_csv(file_name, file_contents=file_contents)
+        return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
     else:
         try:
-            return get_data_csv(file_name, file_contents=file_contents)
+            return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
         except:
             raise ValueError("Unable to load file '"+file_name+"' as csv")
         
-def get_data_xlsx(file_name, file_contents=None):
+def get_data_xlsx(file_name, file_contents=None, on_demand=False):
     '''
     Loads the new excel format files. Old format files will automatically
     get loaded as well.
@@ -44,9 +45,32 @@ def get_data_xlsx(file_name, file_contents=None):
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
     '''
-    return get_data_xls(file_name, file_contents)
+    return get_data_xls(file_name, file_contents=file_contents, on_demand=on_demand)
 
-def get_data_xls(file_name, file_contents=None):
+class SheetYielder(object):
+    '''
+    Provides an abstraction which yeilds individual sheets for iterable consumption.
+    Unfortunately the sheet abstraction in xlrd doesn't accomodate yield patterns, so
+    once a single row is yielded by this generator the entire sheet has been loaded.
+    This loading will not happen until the iterator is triggered however, so unused
+    sheets will remain unused.
+    '''
+
+    def __init__(self, book, sheet_index, row_builder):
+        self.book = book
+        self.sheet_index = sheet_index
+        self.row_builder = row_builder
+        self.sheet = None
+
+    def __iter__(self):
+        if not self.sheet:
+            self.sheet = self.book.sheet_by_index(self.sheet_index)
+
+        # Unfortunately 
+        for row in xrange(self.sheet.nrows):
+            yield self.row_builder(self.sheet, row)
+
+def get_data_xls(file_name, file_contents=None, on_demand=False):
     '''
     Loads the old excel format files. New format files will automatically
     get loaded as well.
@@ -92,34 +116,24 @@ def get_data_xls(file_name, file_contents=None):
         elif val_type == 5: # ERROR
             value = xlrd.error_text_from_code[value]
         return value
-    
+
     def xlrd_xsl_to_array(file_name, file_contents=None):
         '''
         Returns: 
-            A list of sheets; each sheet is a dict containing
-            { sheet_name: unicode string naming that sheet,
-              sheet_data: 2-D table holding the converted cells of that sheet }
-        '''   
-        book      = xlrd.open_workbook(file_name, file_contents=file_contents)
-        sheets    = []
-        formatter = lambda(t, v): format_excel_val(book, t, v, False)
-        
-        for sheet_name in book.sheet_names():
-            raw_sheet = book.sheet_by_name(sheet_name)
-            data      = []
-            for row in range(raw_sheet.nrows):
-                (types, values) = (raw_sheet.row_types(row), raw_sheet.row_values(row))
-                data.append(map(formatter, zip(types, values)))
-            sheets.append({'sheet_name': sheet_name, 'sheet_data': data})
-        return sheets
-    
-    data = []
-    
-    for ws in xlrd_xsl_to_array(file_name, file_contents):
-        data.append(ws['sheet_data'])
-    return data
+            A list of 2-D tables holding the converted cells of each sheet
+        '''
+        book = xlrd.open_workbook(file_name, file_contents=file_contents, on_demand=on_demand)
+        formatter = lambda (t, v): format_excel_val(book, t, v, False)
+        row_builder = lambda s, r: map(formatter, zip(s.row_types(r), s.row_values(r)))
 
-def get_data_csv(file_name, load_as_unicode=True, file_contents=None):
+        data = [SheetYielder(book, index, row_builder) for index in xrange(book.nsheets)]
+        if not on_demand:
+            data = [list(sheet) for sheet in data]
+        return data
+    
+    return xlrd_xsl_to_array(file_name, file_contents)
+
+def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=False):
     '''
     Gets good old csv data from a file.
     
@@ -130,21 +144,33 @@ def get_data_csv(file_name, load_as_unicode=True, file_contents=None):
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
     '''
-    table = []
-    
-    def process_csv(csv_file):
-        for line in csv_file:
-            if load_as_unicode:
-                table.append([unicode(cell, 'utf-8') for cell in line])
-            else:
-                table.append(line)
+    def yield_csv(csv_contents, csv_file):
+        try:
+            for line in csv_contents:
+                if load_as_unicode:
+                    yield [unicode(cell, 'utf-8') for cell in line]
+                else:
+                    yield line
+        finally:
+            try:
+                csv_file.close()
+            except:
+                pass
+
+    def process_csv(csv_contents, csv_file):
+        return [line for line in yield_csv(csv_contents, csv_file)]
     
     if file_contents:
         csv_file = StringIO(file_contents)
-        process_csv(csv.reader(csv_file, dialect=csv.excel))
     else:
-        with open(file_name, "rb") as csv_file:
-            process_csv(csv.reader(csv_file, dialect=csv.excel))
+        # Don't use 'open as' format, as on_demand loads shouldn't close the file early
+        csv_file = open(file_name, "rb")
+    reader = csv.reader(csv_file, dialect=csv.excel)
+
+    if on_demand:
+        table = yield_csv(reader, csv_file)
+    else:
+        table = process_csv(reader, csv_file)
     
     return [table]
 

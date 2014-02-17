@@ -6,23 +6,27 @@ import unittest
 import os
 from os.path import dirname
 
-def compare_to_csv(file_name, array):
+def compare_to_csv(file_name, check_table):
     '''
     Helper function which compares the loaded data against another csv.
     '''
     with open(file_name,"r") as mfile:
-        master = csv.reader(mfile)
-        for i, line in enumerate(master):
-            for j, word in enumerate(line):
-                if(word != array[i][j]):
+        # Squash iterators and generate full tables
+        master = [line for line in csv.reader(mfile)]
+        check = [line for line in check_table]
+        if len(master) != len(check):
+            return False
+        for master_line, check_line in zip(master, check):
+            if len(master_line) != len(check_line):
+                return False
+            for master_elem, check_elem in zip(master_line, check_line):
+                if master_elem != check_elem:
                     try: # Check if same number (0.00 vs 0)
                         # XLS & XLSX modules add extra digits for calculated cells.
-                        if round(float(word),8) != round(float(array[i][j]),8):  
-                            #print "Row:",i,"Column:",j,"Master:",word,"Test:",array[i][j],"END"
+                        if round(float(master_elem), 8) != round(float(check_elem), 8):  
                             return False
                     except:
                         return False
-   
     return True
 
 class TableLoaderTest(unittest.TestCase):
@@ -46,68 +50,94 @@ class TableLoaderTest(unittest.TestCase):
         self.excel_master2 = os.path.join(self.data_dir, 'master', 'excel_sheet2_master.csv')
         self.excel_master3 = os.path.join(self.data_dir, 'master', 'excel_sheet3_master.csv')
     
-    def test_csv(self):
-        data = tableloader.read(self.csv_test)
-        self.assertTrue(compare_to_csv(self.csv_master,data[0]))
+    def test_csv(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.csv_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.csv_master, data[0]))
+
+    def test_on_demand_csv(self, data=None):
+        self.test_csv(data, True)
     
-    def test_content_csv(self):
+    def test_content_csv(self, on_demand=False):
         fname = self.csv_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
-            data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compare_to_csv(self.csv_master, data[0]))
+            self.test_csv(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_csv(self):
+        self.test_content_csv(True)
        
-    def test_xls(self):
-        data = tableloader.read(self.xls_test)      
-        self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
-        self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
-        self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
+    def test_xls(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xls_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+
+    def test_on_demand_xls(self, data=None):
+        self.test_xls(data, True)
         
-    def test_content_xls(self):
+    def test_content_xls(self, on_demand=False):
         fname = self.xls_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
-            data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
-            self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
-            self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
+            self.test_xls(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_xls(self):
+        self.test_content_xls(True)
         
-    def test_xlsx(self):
-        data = tableloader.read(self.xlsx_test) 
-        self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
-        self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
-        self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
+    def test_xlsx(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xlsx_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+
+    def test_on_demand_xlsx(self, data=None):
+        self.test_xlsx(data, True)
         
-    def test_content_xlsx(self):
+    def test_content_xlsx(self, on_demand=False):
         fname = self.xlsx_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
-            data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compare_to_csv(self.excel_master1,data[0]))
-            self.assertTrue(compare_to_csv(self.excel_master2,data[1]))
-            self.assertTrue(compare_to_csv(self.excel_master3,data[2]))
+            self.test_xlsx(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_xlsx(self):
+        self.test_content_xlsx(True)
         
-    def test_function_xls(self):
-        data = tableloader.read(self.xls_formula_test)
-        self.assertTrue(compare_to_csv(self.formula_master,data[0]))
+    def test_function_xls(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xls_formula_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.formula_master, data[0]))
+
+    def test_on_demand_function_xls(self, data=None):
+        self.test_function_xls(data, True)
         
-    def test_content_function_xls(self):
+    def test_content_function_xls(self, on_demand=False):
         fname = self.xls_formula_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
-            data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compare_to_csv(self.formula_master,data[0]))
+            self.test_function_xls(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_function_xls(self):
+        self.test_content_function_xls(True)
        
-    def test_function_xlsx(self):
-        data = tableloader.read(self.xlsx_formula_test)
-        self.assertTrue(compare_to_csv(self.formula_master,data[0]))
+    def test_function_xlsx(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xlsx_formula_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.formula_master, data[0]))
+
+    def test_on_demand_function_xlsx(self, data=None):
+        self.test_function_xlsx(data, True)
         
-    def test_content_function_xlsx(self):
+    def test_content_function_xlsx(self, on_demand=False):
         fname = self.xlsx_formula_test
         with open(fname, "rb") as dfile:
             name, ext = os.path.splitext(fname)
-            data = tableloader.read(ext, dfile.read())
-            self.assertTrue(compare_to_csv(self.formula_master,data[0]))
+            self.test_function_xlsx(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_function_xlsx(self):
+        self.test_content_function_xlsx(True)
 
 if __name__ == '__main__': 
     unittest.main()
