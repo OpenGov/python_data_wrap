@@ -14,6 +14,10 @@ def read(file_name, file_contents=None, on_demand=False):
     Loads an arbitrary file type (xlsx, xls, or csv like) and returns
     a list of 2D tables. For csv files this will be a list of one table,
     but excel formats can have many tables/worksheets.
+
+    TODO:
+        Add wrapper which can be closed/exited on each file type which cleans
+        up the file handler.
     
     Args:
         file_name: The name of the local file, or the holder for the 
@@ -35,9 +39,8 @@ def read(file_name, file_contents=None, on_demand=False):
         
 def get_data_xlsx(file_name, file_contents=None, on_demand=False):
     '''
-    Loads the new excel format files. Old format files will automatically
-    get loaded as well.
-    
+    Loads the new excel format files. Old format files will automatically get loaded as well.
+
     Args:
         file_name: The name of the local file, or the holder for the 
             extension type when the file_contents are supplied.
@@ -54,7 +57,6 @@ class SheetYielder(object):
     This loading will not happen until the iterator is triggered however, so unused
     sheets will remain unused.
     '''
-
     def __init__(self, book, sheet_index, row_builder):
         self.book = book
         self.sheet_index = sheet_index
@@ -128,6 +130,7 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
         data = [SheetYielder(book, index, row_builder) for index in xrange(book.nsheets)]
         if not on_demand:
             data = [list(sheet) for sheet in data]
+            book.release_resources()
         return data
     
     return xlrd_xsl_to_array(file_name, file_contents)
