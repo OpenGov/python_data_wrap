@@ -1,5 +1,6 @@
 # PyDataWrap
-Python Wrappers on Databases and Datatypes/Data Structures
+Python Wrappers on Data Structures and abstractions over persistent
+data stores.
 
 ## Description
 This module is a home for Python wrappers of data, databases and
@@ -19,25 +20,19 @@ retrieve subsets of data to be treated as complete, contiguous lists.
 There are also some file loading/saving modules for various formats.
 
 ## Dependencies
-* xlrd (for old excel files in tableloader.py)
-* openpyxl (for new excel files in tableloader.py)
-* bsddb (speeds up filedbwrap; don't use this addition for production code -- requires very expensive oracle license)
-
-### Dependency Installation
-Download xlrd from http://pypi.python.org/pypi/xlrd
-
-    cd <xlrd directory>
-    [sudo] python setup.py install
-
-Download hjunes-openpyxl (python version fixes) from https://bitbucket.org/hjunes/openpyxl/downloads
-
-    cd <openpyxl directory>
-    [sudo] python setup.py install
+* allset
+* xlrd (for excel files in tableloader.py)
+* redis (for RedisDB wrappers)
 
 ## Setup
-### Installation instructions
-Once the dependencies are resolved the package requires no other installation
-processes.
+### Installation
+From source:
+
+    python settup.py install
+
+From pip:
+
+    pip install pydatawrap
 
 ## Features
 * File based dictionaries and sets
@@ -49,6 +44,7 @@ processes.
 ## Navigating the Repo
 ### datawrap
 The implementation files for the repository.
+
 ### tests
 All unit tests for the repo.  
 
@@ -61,6 +57,7 @@ All unit tests for the repo.
 
 ## Author
 Author(s): Matthew Seal
-Collaborator(s): Joe Maguire
 
-#### (C) Copyright 2013, [OpenGov](http://opengov.com)
+Collaborator(s): Joe Maguire, Loren Abrams
+
+&copy; Copyright 2013, [OpenGov](http://opengov.com)
