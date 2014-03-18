@@ -103,6 +103,10 @@ class RedisCacheDict(StrictRedis, collections.MutableMapping):
     def __iter__(self):
         raise NotImplementedError('Redis does not supply a cursor for iteration')
 
+    def __bool__(self):
+        return True # Always return truey because we can't determine length
+    __nonzero__ = __bool__
+
     @property
     def num_queued_writes(self):
         return len(self._dirty_keys)
