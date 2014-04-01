@@ -1,5 +1,6 @@
 # This import fixes sys.path issues
-import bootstrap
+import parentpath
+
 from datawrap import listwrap
 import unittest
 
