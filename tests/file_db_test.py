@@ -5,7 +5,8 @@ changes could disrupt these.
 '''
 
 # This import fixes sys.path issues
-import bootstrap
+import parentpath
+
 from datawrap import filedbwrap
 import unittest
 import os

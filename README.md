@@ -46,7 +46,7 @@ From pip:
 The implementation files for the repository.
 
 ### tests
-All unit tests for the repo.  
+All unit tests for the repo.
 
 ## Language Preferences
 * Google Style Guide

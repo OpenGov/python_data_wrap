@@ -1,5 +1,6 @@
 # This import fixes sys.path issues
-import bootstrap
+import parentpath
+
 import unittest
 import os
 from os.path import dirname

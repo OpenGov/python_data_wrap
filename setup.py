@@ -4,7 +4,7 @@ from setuptools import setup
 
 def read(fname):
     with open(fname) as fhandle:
-            return fhandle.read()
+        return fhandle.read()
 
 def readMD(fname):
     # Utility function to read the README file.
