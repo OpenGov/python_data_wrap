@@ -74,6 +74,7 @@ class TableLoaderTest(unittest.TestCase):
         self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
         self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
         self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+        self.assertEqual(data[2].name, '3rd Sheet')
 
     def test_on_demand_xls(self, data=None):
         self.test_xls(data, True)

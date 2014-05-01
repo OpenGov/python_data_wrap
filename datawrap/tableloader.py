@@ -62,14 +62,32 @@ class SheetYielder(object):
         self.sheet_index = sheet_index
         self.row_builder = row_builder
         self.sheet = None
+        self.rows = None  # This is only utilized when load is called
 
-    def __iter__(self):
+    @property
+    def name(self):
+        return self.instantiate_sheet().name
+    
+    def load(self):
+        if self.rows is None:
+            self.rows = list(self)
+        return self.rows
+
+    def instantiate_sheet(self):
         if not self.sheet:
             self.sheet = self.book.sheet_by_index(self.sheet_index)
+        return self.sheet
 
-        # Unfortunately 
-        for row in xrange(self.sheet.nrows):
-            yield self.row_builder(self.sheet, row)
+    def __iter__(self):
+        if self.rows is not None:
+            for row in self.rows:
+                yield row
+        else:
+            self.instantiate_sheet()
+
+            # Unfortunately 
+            for row in xrange(self.sheet.nrows):
+                yield self.row_builder(self.sheet, row)
 
 def get_data_xls(file_name, file_contents=None, on_demand=False):
     '''
@@ -129,7 +147,8 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
 
         data = [SheetYielder(book, index, row_builder) for index in xrange(book.nsheets)]
         if not on_demand:
-            data = [list(sheet) for sheet in data]
+            for sheet in data:
+                sheet.load()
             book.release_resources()
         return data
     
