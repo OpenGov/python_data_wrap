@@ -23,7 +23,7 @@ required = [req.strip() for req in read('requirements.txt').splitlines() if req.
 
 setup(
     name='PyDataWrap',
-    version='1.2.1',
+    version='1.2.2',
     author='Matthew Seal',
     author_email='mseal@opengov.com',
     description='Tools for wrapping data and manipulating it in efficient ways',
