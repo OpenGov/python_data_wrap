@@ -2,11 +2,10 @@ import collections
 
 from redis import StrictRedis
 
-
 DEFAULT_BATCH_SIZE = 1024
 
-
 # TODO Eventually extend the RedisCacheDict from UnorderedCacheDict
+# TODO add cache dropping
 class RedisCacheDict(StrictRedis, collections.MutableMapping):
     '''
     This class provides an in-memory ache wrapper on top of an `StrictRedis`
@@ -138,6 +137,7 @@ class RedisCacheDict(StrictRedis, collections.MutableMapping):
         except TypeError:
             raise KeyError('Key is neither a string nor a tuple-like object')
 
-    def close(self, **kwargs):
-        pass  # No-op .. connections are pooled internally by redis-py
-
+    def close(self, flushdb=False, **kwargs):
+        if flushdb:
+            self.flushdb()
+        # Connections are pooled internally by redis-py
