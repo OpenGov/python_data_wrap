@@ -62,32 +62,40 @@ class SheetYielder(object):
         self.sheet_index = sheet_index
         self.row_builder = row_builder
         self.sheet = None
-        self.rows = None  # This is only utilized when load is called
+        self.rows = None  # This is utilized only if load() is invoked
 
     @property
     def name(self):
-        return self.instantiate_sheet().name
-    
-    def load(self):
-        if self.rows is None:
-            self.rows = list(self)
-        return self.rows
+        self._instantiate_sheet()
+        return self.sheet.name
 
-    def instantiate_sheet(self):
-        if not self.sheet:
-            self.sheet = self.book.sheet_by_index(self.sheet_index)
-        return self.sheet
+    def load(self):
+        if self.rows is not None:
+            return
+            
+        self._instantiate_sheet()
+        self.rows = [self._build_row(row) for row in xrange(self.sheet.nrows)]
 
     def __iter__(self):
         if self.rows is not None:
             for row in self.rows:
                 yield row
-        else:
-            self.instantiate_sheet()
+            return
 
-            # Unfortunately 
-            for row in xrange(self.sheet.nrows):
-                yield self.row_builder(self.sheet, row)
+        self._instantiate_sheet()
+        for i in xrange(self.sheet.nrows):
+            yield self[i]
+
+    def __getitem__(self, i):
+        self._instantiate_sheet()
+        return self._build_row(i)
+
+    def _instantiate_sheet(self):
+        if not self.sheet:
+            self.sheet = self.book.sheet_by_index(self.sheet_index)
+
+    def _build_row(self, i):
+        return self.row_builder(self.sheet, i)
 
 def get_data_xls(file_name, file_contents=None, on_demand=False):
     '''
