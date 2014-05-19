@@ -86,6 +86,10 @@ class SheetYielder(object):
         for i in xrange(self.sheet.nrows):
             yield self[i]
 
+    def __len__(self):
+        self._instantiate_sheet()
+        return self.sheet.nrows
+
     def __getitem__(self, i):
         self._instantiate_sheet()
         return self._build_row(i)
