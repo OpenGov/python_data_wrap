@@ -2,6 +2,8 @@ import os
 import shutil
 from setuptools import setup
 
+VERSION = '1.2.3'
+
 def read(fname):
     with open(fname) as fhandle:
         return fhandle.read()
@@ -23,7 +25,7 @@ required = [req.strip() for req in read('requirements.txt').splitlines() if req.
 
 setup(
     name='PyDataWrap',
-    version='1.2.2',
+    version=VERSION,
     author='Matthew Seal',
     author_email='mseal@opengov.com',
     description='Tools for wrapping data and manipulating it in efficient ways',
@@ -34,7 +36,7 @@ setup(
     test_suite='tests',
     zip_safe=False,
     url='https://github.com/OpenGov/python_data_wrap',
-    download_url='https://github.com/OpenGov/python_data_wrap/tarball/v1.2.1',
+    download_url='https://github.com/OpenGov/python_data_wrap/tarball/v'+VERSION,
     keywords=['tables', 'data', 'databases', 'dictionary', 'filedb'],
     classifiers=[
         'Development Status :: 4 - Beta',

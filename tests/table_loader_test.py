@@ -7,7 +7,7 @@ import unittest
 import os
 from os.path import dirname
 
-def compare_to_csv(file_name, check_table):
+def compare_to_csv(file_name, check_table, row_slice=None):
     '''
     Helper function which compares the loaded data against another csv.
     '''
@@ -15,6 +15,11 @@ def compare_to_csv(file_name, check_table):
         # Squash iterators and generate full tables
         master = [line for line in csv.reader(mfile)]
         check = [line for line in check_table]
+
+        if row_slice:
+            master = master[row_slice]
+            check = check[row_slice]
+
         if len(master) != len(check):
             return False
         for master_line, check_line in zip(master, check):
@@ -22,9 +27,14 @@ def compare_to_csv(file_name, check_table):
                 return False
             for master_elem, check_elem in zip(master_line, check_line):
                 if master_elem != check_elem:
-                    try: # Check if same number (0.00 vs 0)
-                        # XLS & XLSX modules add extra digits for calculated cells.
-                        if round(float(master_elem), 8) != round(float(check_elem), 8):  
+                    try:
+                        if isinstance(check_elem, int):
+                            master_elem = int(float(master_elem))
+                        else:
+                            # XLS & XLSX modules add extra digits for calculated cells.
+                            check_elem = round(float(check_elem), 8)
+                            master_elem = round(float(master_elem), 8)
+                        if master_elem != check_elem:
                             return False
                     except:
                         return False
@@ -107,6 +117,12 @@ class TableLoaderTest(unittest.TestCase):
     def test_on_demand_content_xlsx(self):
         self.test_content_xlsx(True)
         
+    def test_sheet_yielder_slicing(self):
+        data = tableloader.read(self.xls_test)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(1,3)))
+        data = tableloader.read(self.xls_test, on_demand=True)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(1,3)))
+
     def test_function_xls(self, data=None, on_demand=False):
         if data == None:
             data = tableloader.read(self.xls_formula_test, on_demand=on_demand)

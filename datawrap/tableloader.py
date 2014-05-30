@@ -90,9 +90,18 @@ class SheetYielder(object):
         self._instantiate_sheet()
         return self.sheet.nrows
 
-    def __getitem__(self, i):
+    def __getitem__(self, key):
         self._instantiate_sheet()
-        return self._build_row(i)
+
+        if isinstance(key, slice):
+            rows = []
+            i = key.start
+            while i < key.stop:
+                rows.append(self._build_row(i))
+                i += (1 if key.step is None else key.step)
+            return rows
+        else:
+            return self._build_row(key)
 
     def _instantiate_sheet(self):
         if not self.sheet:
