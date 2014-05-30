@@ -119,9 +119,9 @@ class TableLoaderTest(unittest.TestCase):
         
     def test_sheet_yielder_slicing(self):
         data = tableloader.read(self.xls_test)
-        self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(1,3)))
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(1,None)))
         data = tableloader.read(self.xls_test, on_demand=True)
-        self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(1,3)))
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(None,3)))
 
     def test_function_xls(self, data=None, on_demand=False):
         if data == None:
