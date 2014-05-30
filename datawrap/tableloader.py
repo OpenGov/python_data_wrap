@@ -95,10 +95,16 @@ class SheetYielder(object):
 
         if isinstance(key, slice):
             rows = []
-            i = key.start
-            while i < key.stop:
+
+            start = 0 if key.start is None else key.start
+            stop = len(self) if key.stop is None else key.stop
+            step = 1 if key.step is None else key.step
+
+            i = start
+            while i < stop:
                 rows.append(self._build_row(i))
-                i += (1 if key.step is None else key.step)
+                i += step
+                
             return rows
         else:
             return self._build_row(key)
