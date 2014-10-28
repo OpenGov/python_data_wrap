@@ -70,6 +70,9 @@ class SheetYielder(object):
         return self.sheet.name
 
     def load(self):
+        if self.rows is not None:
+            return self.rows
+
         self._instantiate_sheet()
         self.rows = [self._build_row(row) for row in xrange(self.sheet.nrows)]
         return self.rows
