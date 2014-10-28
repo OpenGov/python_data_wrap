@@ -18,9 +18,9 @@ def read(file_name, file_contents=None, on_demand=False):
     TODO:
         Add wrapper which can be closed/exited on each file type which cleans
         up the file handler.
-    
+
     Args:
-        file_name: The name of the local file, or the holder for the 
+        file_name: The name of the local file, or the holder for the
             extension type when the file_contents are supplied.
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
@@ -36,13 +36,13 @@ def read(file_name, file_contents=None, on_demand=False):
             return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
         except:
             raise ValueError("Unable to load file '"+file_name+"' as csv")
-        
+
 def get_data_xlsx(file_name, file_contents=None, on_demand=False):
     '''
     Loads the new excel format files. Old format files will automatically get loaded as well.
 
     Args:
-        file_name: The name of the local file, or the holder for the 
+        file_name: The name of the local file, or the holder for the
             extension type when the file_contents are supplied.
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
@@ -71,10 +71,11 @@ class SheetYielder(object):
 
     def load(self):
         if self.rows is not None:
-            return
-            
+            return self.rows
+
         self._instantiate_sheet()
         self.rows = [self._build_row(row) for row in xrange(self.sheet.nrows)]
+        return self.rows
 
     def __iter__(self):
         if self.rows is not None:
@@ -93,7 +94,9 @@ class SheetYielder(object):
     def __getitem__(self, key):
         self._instantiate_sheet()
 
-        if isinstance(key, slice):
+        if self.rows is not None:
+            return self.rows.__getitem__(key)
+        elif isinstance(key, slice):
             rows = []
 
             start = 0 if key.start is None else key.start
@@ -104,7 +107,7 @@ class SheetYielder(object):
             while i < stop:
                 rows.append(self._build_row(i))
                 i += step
-                
+
             return rows
         else:
             return self._build_row(key)
@@ -120,7 +123,7 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
     '''
     Loads the old excel format files. New format files will automatically
     get loaded as well.
-    
+
     Args:
         file_name: The name of the local file, or the holder for the
             extension type when the file_contents are supplied.
@@ -133,10 +136,10 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
         standard YYYY-MM-DDTHH:MM:SS ISO date.  If the date part is all zeros, it's
         assumed to be a time; if the time part is all zeros it's assumed to be a date;
         if all of it is zeros it's taken to be a time, specifically 00:00:00 (midnight).
-    
+
         Note that datetimes of midnight will come back as date-only strings.  A date
         of month=0 and day=0 is meaningless, so that part of the coercion is safe.
-        For more on the hairy nature of Excel date/times see 
+        For more on the hairy nature of Excel date/times see
         http://www.lexicon.net/sjmachin/xlrd.html
         '''
         (y,m,d, hh,mm,ss) = tuple_date
@@ -149,11 +152,11 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
         ''''Cleans up the incoming excel data'''
         #  Data val_type Codes:
         #  EMPTY   0
-        #  TEXT    1 a Unicode string 
-        #  NUMBER  2 float 
-        #  DATE    3 float 
-        #  BOOLEAN 4 int; 1 means TRUE, 0 means FALSE 
-        #  ERROR   5 
+        #  TEXT    1 a Unicode string
+        #  NUMBER  2 float
+        #  DATE    3 float
+        #  BOOLEAN 4 int; 1 means TRUE, 0 means FALSE
+        #  ERROR   5
         if   val_type == 2: # TEXT
             if value == int(value): value = int(value)
         elif val_type == 3: # NUMBER
@@ -165,7 +168,7 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
 
     def xlrd_xsl_to_array(file_name, file_contents=None):
         '''
-        Returns: 
+        Returns:
             A list of 2-D tables holding the converted cells of each sheet
         '''
         book = xlrd.open_workbook(file_name, file_contents=file_contents, on_demand=on_demand)
@@ -178,13 +181,13 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
                 sheet.load()
             book.release_resources()
         return data
-    
+
     return xlrd_xsl_to_array(file_name, file_contents)
 
 def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=False):
     '''
     Gets good old csv data from a file.
-    
+
     Args:
         file_name: The name of the local file, or the holder for the
             extension type when the file_contents are supplied.
@@ -207,7 +210,7 @@ def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=
 
     def process_csv(csv_contents, csv_file):
         return [line for line in yield_csv(csv_contents, csv_file)]
-    
+
     if file_contents:
         csv_file = StringIO(file_contents)
     else:
@@ -219,13 +222,13 @@ def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=
         table = yield_csv(reader, csv_file)
     else:
         table = process_csv(reader, csv_file)
-    
+
     return [table]
 
 def write(data, file_name):
     '''
     Writes 2D tables to file.
-    
+
     Args:
         data: 2D list of tables/worksheets.
         file_name: Name of the output file (determines type).
@@ -238,11 +241,11 @@ def write(data, file_name):
         return write_csv(data, file_name)
     else:
         return write_csv(data, file_name)
-      
+
 def write_xlsx(data, file_name):
     '''
     Writes out to new excel format.
-    
+
     Args:
         data: 2D list of tables/worksheets.
         file_name: Name of the output file.
@@ -252,28 +255,28 @@ def write_xlsx(data, file_name):
 def write_xls(data, file_name):
     '''
     Writes out to old excel format.
-    
+
     Args:
         data: 2D list of tables/worksheets.
         file_name: Name of the output file.
     '''
     raise NotImplementedError("Xls writing not implemented")
- 
+
 def write_csv(data, file_name):
     '''
     Writes out to csv format.
-    
+
     Args:
         data: 2D list of tables/worksheets.
         file_name: Name of the output file.
-    '''   
+    '''
     name_extension = len(data) > 1
     root, ext = os.path.splitext(file_name)
-    
+
     for i, sheet in enumerate(data):
         fname = file_name if not name_extension else root+"_"+str(i)+ext
         with open(fname, "wb") as date_file:
             csv_file = csv.writer(date_file)
             for line in sheet:
                 csv_file.writerow(line)
-    
+
