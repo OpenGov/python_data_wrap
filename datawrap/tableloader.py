@@ -1,4 +1,5 @@
 import xlrd
+import xlwt
 import re
 import csv
 import os
@@ -225,42 +226,55 @@ def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=
 
     return [table]
 
-def write(data, file_name):
+def write(data, file_name, worksheet_names=None):
     '''
     Writes 2D tables to file.
 
     Args:
         data: 2D list of tables/worksheets.
         file_name: Name of the output file (determines type).
+        worksheet_names: A list of worksheet names (optional).
     '''
     if re.search(XLSX_EXT_REGEX, file_name):
-        return write_xlsx(data, file_name)
+        return write_xlsx(data, file_name, worksheet_names)
     elif re.search(XLS_EXT_REGEX, file_name):
-        return write_xls(data, file_name)
+        return write_xls(data, file_name, worksheet_names)
     elif re.search(CSV_EXT_REGEX, file_name):
         return write_csv(data, file_name)
     else:
         return write_csv(data, file_name)
 
-def write_xlsx(data, file_name):
+def write_xlsx(data, file_name, worksheet_names=None):
     '''
     Writes out to new excel format.
 
     Args:
         data: 2D list of tables/worksheets.
         file_name: Name of the output file.
+        worksheet_names: A list of worksheet names (optional).
     '''
     raise NotImplementedError("Xlsx writing not implemented")
 
-def write_xls(data, file_name):
+def write_xls(data, file_name, worksheet_names=None):
     '''
     Writes out to old excel format.
 
     Args:
         data: 2D list of tables/worksheets.
         file_name: Name of the output file.
+        worksheet_names: A list of worksheet names (optional).
     '''
-    raise NotImplementedError("Xls writing not implemented")
+    workbook = xlwt.Workbook()
+    for sheet_index, sheet_data in enumerate(data):
+        if worksheet_names and sheet_index < len(worksheet_names) and worksheet_names[sheet_index]:
+            name = worksheet_names[sheet_index]
+        else:
+            name = 'Worksheet {}'.format(sheet_index)
+        sheet = workbook.add_sheet(name)
+        for row_index, row in enumerate(sheet_data):
+            for col_index, value in enumerate(row):
+                sheet.write(row_index, col_index, value)
+    workbook.save(file_name)
 
 def write_csv(data, file_name):
     '''
