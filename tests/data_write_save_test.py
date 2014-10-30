@@ -89,12 +89,15 @@ class DataLoadTest(unittest.TestCase):
         xls_file_name = os.path.join(self.data_dir, 'test_csv.xls')
 
         # Read/Write dummy data
-        for writer in [tableloader.write_xls, tableloader.write]:
-            writer(self.dummy_data, xls_file_name)
+        for writer, worksheet_names in zip([tableloader.write_xls, tableloader.write], [None, [None, 'Test Sheet Name 1']]):
+            writer(self.dummy_data, xls_file_name, worksheet_names)
             written_content = tableloader.read(xls_file_name)
             # Check that same number of worksheets were written
             self.assertEqual(len(self.dummy_data), len(written_content))
-            for dummy_sheet, written_sheet in zip(self.dummy_data, written_content):
+            for sheet_index, (dummy_sheet, written_sheet) in enumerate(zip(self.dummy_data, written_content)):
+                # Make sure our worksheet names we provide come through
+                if worksheet_names and sheet_index < len(worksheet_names) and worksheet_names[sheet_index]:
+                    self.assertEqual(written_sheet.name, worksheet_names[sheet_index])
                 self.assertListEqual(self.blank_to_none(written_sheet.load()),
                         self.missing_fill(self.chop_extra_nones(dummy_sheet)))
 
