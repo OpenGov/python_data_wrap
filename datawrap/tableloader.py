@@ -120,6 +120,12 @@ class SheetYielder(object):
     def _build_row(self, i):
         return self.row_builder(self.sheet, i)
 
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return "SheetYielder({})".format(list(self).__repr__())
+
 def get_data_xls(file_name, file_contents=None, on_demand=False):
     '''
     Loads the old excel format files. New format files will automatically
