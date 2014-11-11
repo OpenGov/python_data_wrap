@@ -1,7 +1,7 @@
 import xlrd
 import xlwt
 import re
-import csv
+import unicodecsv as csv
 import os
 from StringIO import StringIO
 
@@ -191,7 +191,7 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
 
     return xlrd_xsl_to_array(file_name, file_contents)
 
-def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=False):
+def get_data_csv(file_name, encoding='utf-8', file_contents=None, on_demand=False):
     '''
     Gets good old csv data from a file.
 
@@ -205,10 +205,7 @@ def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=
     def yield_csv(csv_contents, csv_file):
         try:
             for line in csv_contents:
-                if load_as_unicode:
-                    yield [unicode(cell, 'utf-8') for cell in line]
-                else:
-                    yield line
+                yield line
         finally:
             try:
                 csv_file.close()
@@ -223,7 +220,7 @@ def get_data_csv(file_name, load_as_unicode=True, file_contents=None, on_demand=
     else:
         # Don't use 'open as' format, as on_demand loads shouldn't close the file early
         csv_file = open(file_name, "rb")
-    reader = csv.reader(csv_file, dialect=csv.excel)
+    reader = csv.reader(csv_file, dialect=csv.excel, encoding=encoding)
 
     if on_demand:
         table = yield_csv(reader, csv_file)
@@ -282,7 +279,7 @@ def write_xls(data, file_name, worksheet_names=None):
                 sheet.write(row_index, col_index, value)
     workbook.save(file_name)
 
-def write_csv(data, file_name):
+def write_csv(data, file_name, encoding='utf-8'):
     '''
     Writes out to csv format.
 
@@ -296,7 +293,7 @@ def write_csv(data, file_name):
     for i, sheet in enumerate(data):
         fname = file_name if not name_extension else root+"_"+str(i)+ext
         with open(fname, "wb") as date_file:
-            csv_file = csv.writer(date_file)
+            csv_file = csv.writer(date_file, encoding=encoding)
             for line in sheet:
                 csv_file.writerow(line)
 
