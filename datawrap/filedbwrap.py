@@ -17,13 +17,13 @@ class MemFromFileDict(MemDict):
     '''
     This wraps a standard dictionary with a file persistence that
     allows the dictionary to be reloaded and/or saved upon closing.
-    '''   
+    '''
     # Careful with changing __init__ params and forgetting them in _reinit
-    def __init__(self, db_name, db_ext=None, read_only=False, database_default_func=None, 
+    def __init__(self, db_name, db_ext=None, read_only=False, database_default_func=None,
                  clear=False, stringify_keys=False, **kwargs):
-        MemDict.__init__(self, db_name, read_only=read_only, 
-                         stringify_keys=stringify_keys, 
-                         database_default_func=database_default_func, 
+        MemDict.__init__(self, db_name, read_only=read_only,
+                         stringify_keys=stringify_keys,
+                         database_default_func=database_default_func,
                          **kwargs)
         self._db_ext = db_ext if db_ext != None else get_default_file_ext()
         abs_dir_path = os.path.dirname(os.path.abspath(db_name))
@@ -90,13 +90,13 @@ class MemFromFileDict(MemDict):
 
 class FileDict(UnorderedCachedDict):
     '''
-    Defines a dictionary based on a file, with an unordered memory cache. 
-    The database is saved to file when the cache gets too large or it is 
-    synced. This allows for very large databases to be stored in the 
+    Defines a dictionary based on a file, with an unordered memory cache.
+    The database is saved to file when the cache gets too large or it is
+    synced. This allows for very large databases to be stored in the
     filesystem without consuming all available memory.
     '''
     # Careful with changing __init__ params and forgetting them in _reinit
-    def __init__(self, db_name, db_ext=None, read_only=False, clear=False, cache_size=10*1024, 
+    def __init__(self, db_name, db_ext=None, read_only=False, clear=False, cache_size=10*1024,
                  immutable_vals=False, stringify_keys=False, cache_misses=True,
                  database_default_func=None, read_pool_size=0, **kwargs):
         self._db_name = db_name
@@ -111,8 +111,8 @@ class FileDict(UnorderedCachedDict):
         self.flag = 'n' if clear else 'r' if read_only and file_present else 'c'
         self._database = shelve.open(self._db_full_path, flag=self.flag)
         self.closed = False
-        UnorderedCachedDict.__init__(self, self._database, cache_size=cache_size, 
-                                     database_default_func=database_default_func, read_only=read_only, 
+        UnorderedCachedDict.__init__(self, self._database, cache_size=cache_size,
+                                     database_default_func=database_default_func, read_only=read_only,
                                      immutable_vals=immutable_vals, stringify_keys=stringify_keys,
                                      cache_misses=cache_misses, read_pool_size=read_pool_size, **kwargs)
 
@@ -160,8 +160,8 @@ class FileSet(UnorderedCachedSet):
     Much like a FileDict, except treated as a Set instead.
     '''
     # Careful with changing __init__ params and forgetting them in reopen/clear
-    def __init__(self, db_name, db_ext=None, read_only=False, clear=False, cache_size=10*1024, 
-                 immutable_vals=False, stringify_keys=False, cache_misses=True, 
+    def __init__(self, db_name, db_ext=None, read_only=False, clear=False, cache_size=10*1024,
+                 immutable_vals=False, stringify_keys=False, cache_misses=True,
                  read_pool_size=0, **kwargs):
         self._db_name = db_name
         self._db_ext = db_ext if db_ext != None else get_default_file_ext()
@@ -175,10 +175,10 @@ class FileSet(UnorderedCachedSet):
         self.flag = 'n' if clear else 'r' if read_only and file_present else 'c'
         self._database = shelve.open(self._db_full_path, flag=self.flag)
         self.closed = False
-        UnorderedCachedSet.__init__(self, self._database, cache_size=cache_size, 
+        UnorderedCachedSet.__init__(self, self._database, cache_size=cache_size,
                                     read_only=read_only, immutable_vals=immutable_vals,
-                                    stringify_keys=stringify_keys, 
-                                    cache_misses=cache_misses, 
+                                    stringify_keys=stringify_keys,
+                                    cache_misses=cache_misses,
                                     read_pool_size=read_pool_size, **kwargs)
 
     def _add_init_kwargs(self, kwargs):
@@ -226,24 +226,24 @@ class SplitFileDict(SplitDbDict):
     This is useful if you have a large dictionary of words and want
     to store all words with the same first character together.
     '''
-    def __init__(self, db_name, split_keys, split_func, db_ext=None, read_only=False, 
-                 clear=False, cache_misses=True, cache_size=10*1024, immutable_vals=False, 
+    def __init__(self, db_name, split_keys, split_func, db_ext=None, read_only=False,
+                 clear=False, cache_misses=True, cache_size=10*1024, immutable_vals=False,
                  stringify_keys=False, database_default_func=None, **kwargs):
         SplitDbDict.__init__(self, db_name, FileDict, split_keys, split_func, db_ext=db_ext,
                              read_only=read_only, clear=clear, cache_size=cache_size,
-                             immutable_vals=immutable_vals, stringify_keys=stringify_keys, 
-                             database_default_func=database_default_func, 
+                             immutable_vals=immutable_vals, stringify_keys=stringify_keys,
+                             database_default_func=database_default_func,
                              cache_misses=cache_misses, **kwargs)
 
 class SplitFileSet(SplitDbSet):
     '''
     Much like a SplitFileDict, except treated as a Set instead.
     '''
-    def __init__(self, db_name, split_keys, split_func, db_ext=None, read_only=False, 
-                 clear=False, cache_misses=True, cache_size=10*1024, immutable_vals=False, 
+    def __init__(self, db_name, split_keys, split_func, db_ext=None, read_only=False,
+                 clear=False, cache_misses=True, cache_size=10*1024, immutable_vals=False,
                  stringify_keys=False, **kwargs):
         SplitDbSet.__init__(self, db_name, FileSet, split_keys, split_func, db_ext=db_ext,
                             read_only=read_only, clear=clear, cache_size=cache_size,
-                            immutable_vals=immutable_vals, stringify_keys=stringify_keys, 
+                            immutable_vals=immutable_vals, stringify_keys=stringify_keys,
                             cache_misses=cache_misses, **kwargs)
 
