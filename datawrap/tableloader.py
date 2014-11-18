@@ -1,4 +1,5 @@
 import xlrd
+import xmlparse
 import xlwt
 import re
 import unicodecsv as csv
@@ -6,6 +7,7 @@ import os
 from StringIO import StringIO
 
 # Used throughout -- never changed
+XML_EXT_REGEX = re.compile(r'(\.xml)\s*$')
 XLSX_EXT_REGEX = re.compile(r'(\.xlsx)\s*$')
 XLS_EXT_REGEX = re.compile(r'(\.xls)\s*$')
 CSV_EXT_REGEX = re.compile(r'(\.csv)\s*$')
@@ -25,7 +27,11 @@ def read(file_name, file_contents=None, on_demand=False):
             extension type when the file_contents are supplied.
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
+        on_demand: Requests that a yielder be used in place of a full data
+            copy.
     '''
+    if re.search(XML_EXT_REGEX, file_name):
+        return get_data_excel_xml(file_name, file_contents=file_contents, on_demand=on_demand)
     if re.search(XLSX_EXT_REGEX, file_name):
         return get_data_xlsx(file_name, file_contents=file_contents, on_demand=on_demand)
     elif re.search(XLS_EXT_REGEX, file_name):
@@ -47,6 +53,8 @@ def get_data_xlsx(file_name, file_contents=None, on_demand=False):
             extension type when the file_contents are supplied.
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
+        on_demand: Requests that a yielder be used in place of a full data
+            copy.
     '''
     return get_data_xls(file_name, file_contents=file_contents, on_demand=on_demand)
 
@@ -136,6 +144,8 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
             extension type when the file_contents are supplied.
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
+        on_demand: Requests that a yielder be used in place of a full data
+            copy.
     '''
     def tuple_to_iso_date(tuple_date):
         '''
@@ -156,7 +166,7 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
         return date+time
 
     def format_excel_val(book, val_type, value, want_tuple_date):
-        ''''Cleans up the incoming excel data'''
+        '''Cleans up the incoming excel data'''
         #  Data val_type Codes:
         #  EMPTY   0
         #  TEXT    1 a Unicode string
@@ -191,6 +201,50 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
 
     return xlrd_xsl_to_array(file_name, file_contents)
 
+class XMLSheetYielder(SheetYielder):
+    class XMLSheet(object):
+        def __init__(self, name, content):
+            self.name = name
+            self.content = content
+
+            self.nrows = 0
+            self.ncols = 0
+            for row_index in range(1, content.GetMaxRow() + 1):
+                for column_index in range(1, content.GetMaxColumn() + 1):
+                    if self.content.GetCellValue(column_index, row_index + 1, None) is not None:
+                        self.ncols = max(self.ncols, column_index)
+                        self.nrows = row_index + 1
+
+        def row_values(self, row_index):
+            # The xml reader takes index+1 addressing
+            for column in range(1, self.ncols + 1):
+                yield self.content.GetCellValue(column, row_index + 1, None)
+
+    def _instantiate_sheet(self):
+        if not self.sheet:
+            content = self.book.GetWorksheets()[self.sheet_index]
+            name = content.GetName()
+            self.sheet = XMLSheetYielder.XMLSheet(name, content)
+
+def get_data_excel_xml(file_name, file_contents=None, on_demand=False):
+    '''
+    Loads xml excel format files.
+
+    Args:
+        file_name: The name of the local file, or the holder for the
+            extension type when the file_contents are supplied.
+        file_contents: The file-like object holding contents of file_name.
+            If left as None, then file_name is directly loaded.
+        on_demand: Requests that a yielder be used in place of a full data
+            copy (will be ignored until future features are added).
+    '''
+    if file_contents:
+        # TODO make StringIO file-like wrapper
+        pass
+    book = xmlparse.ParseExcelXMLFile(file_name)
+    row_builder = lambda s, r: list(s.row_values(r))
+    return [XMLSheetYielder(book, index, row_builder) for index in xrange(len(book))]
+
 def get_data_csv(file_name, encoding='utf-8', file_contents=None, on_demand=False):
     '''
     Gets good old csv data from a file.
@@ -198,9 +252,11 @@ def get_data_csv(file_name, encoding='utf-8', file_contents=None, on_demand=Fals
     Args:
         file_name: The name of the local file, or the holder for the
             extension type when the file_contents are supplied.
-        load_as_unicode: Loads the file as a unicode object.
+        encoding: Loads the file with the specified cell encoding.
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
+        on_demand: Requests that a yielder be used in place of a full data
+            copy.
     '''
     def yield_csv(csv_contents, csv_file):
         try:
@@ -238,14 +294,27 @@ def write(data, file_name, worksheet_names=None):
         file_name: Name of the output file (determines type).
         worksheet_names: A list of worksheet names (optional).
     '''
-    if re.search(XLSX_EXT_REGEX, file_name):
-        return write_xlsx(data, file_name, worksheet_names)
+    if re.search(XML_EXT_REGEX, file_name):
+        return write_xml(data, file_name, worksheet_names=worksheet_names)
+    elif re.search(XLSX_EXT_REGEX, file_name):
+        return write_xlsx(data, file_name, worksheet_names=worksheet_names)
     elif re.search(XLS_EXT_REGEX, file_name):
-        return write_xls(data, file_name, worksheet_names)
+        return write_xls(data, file_name, worksheet_names=worksheet_names)
     elif re.search(CSV_EXT_REGEX, file_name):
         return write_csv(data, file_name)
     else:
         return write_csv(data, file_name)
+
+def write_xml(data, file_name, worksheet_names=None):
+    '''
+    Writes out to new excel format.
+
+    Args:
+        data: 2D list of tables/worksheets.
+        file_name: Name of the output file.
+        worksheet_names: A list of worksheet names (optional).
+    '''
+    raise NotImplementedError("Xml writing not implemented")
 
 def write_xlsx(data, file_name, worksheet_names=None):
     '''
