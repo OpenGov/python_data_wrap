@@ -63,6 +63,7 @@ def get_data_xlsx(file_name, file_contents=None, on_demand=False):
     '''
     return get_data_xls(file_name, file_contents=file_contents, on_demand=on_demand)
 
+
 class SheetYielder(object):
     '''
     Provides an abstraction which yeilds individual sheets for iterable consumption.
@@ -139,6 +140,7 @@ class SheetYielder(object):
     def __repr__(self):
         return "SheetYielder({})".format(list(self).__repr__())
 
+
 def get_data_xls(file_name, file_contents=None, on_demand=False):
     '''
     Loads the old excel format files. New format files will automatically
@@ -206,6 +208,7 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
 
     return xlrd_xsl_to_array(file_name, file_contents)
 
+
 class XMLSheetYielder(SheetYielder):
     class XMLSheet(object):
         def __init__(self, name, content):
@@ -230,6 +233,7 @@ class XMLSheetYielder(SheetYielder):
             content = self.book.GetWorksheets()[self.sheet_index]
             name = content.GetName()
             self.sheet = XMLSheetYielder.XMLSheet(name, content)
+
 
 def get_data_excel_xml(file_name, file_contents=None, on_demand=False):
     '''
