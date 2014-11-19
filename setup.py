@@ -2,7 +2,7 @@ import os
 import shutil
 from setuptools import setup
 
-VERSION = '1.2.5'
+VERSION = '1.2.6'
 
 def read(fname):
     with open(fname) as fhandle:
