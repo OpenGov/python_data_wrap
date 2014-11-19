@@ -33,19 +33,24 @@ def read(file_name, file_contents=None, on_demand=False):
         on_demand: Requests that a yielder be used in place of a full data
             copy.
     '''
-    if re.search(XML_EXT_REGEX, file_name):
-        return get_data_excel_xml(file_name, file_contents=file_contents, on_demand=on_demand)
-    if re.search(XLSX_EXT_REGEX, file_name):
-        return get_data_xlsx(file_name, file_contents=file_contents, on_demand=on_demand)
-    elif re.search(XLS_EXT_REGEX, file_name):
-        return get_data_xls(file_name, file_contents=file_contents, on_demand=on_demand)
-    elif re.search(CSV_EXT_REGEX, file_name):
-        return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
-    else:
-        try:
+    try:
+        if re.search(XML_EXT_REGEX, file_name):
+            return get_data_excel_xml(file_name, file_contents=file_contents, on_demand=on_demand)
+        if re.search(XLSX_EXT_REGEX, file_name):
+            return get_data_xlsx(file_name, file_contents=file_contents, on_demand=on_demand)
+        elif re.search(XLS_EXT_REGEX, file_name):
+            return get_data_xls(file_name, file_contents=file_contents, on_demand=on_demand)
+        elif re.search(CSV_EXT_REGEX, file_name):
             return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
-        except:
-            raise ValueError("Unable to load file '{}' as csv".format(file_name))
+        else:
+            try:
+                return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
+            except:
+                raise ValueError("Unable to load file '{}' as csv".format(file_name))
+    except xlrd.XLRDError, e:
+        if "<?xml" in str(e):
+            return get_data_excel_xml(file_name, file_contents=file_contents, on_demand=on_demand)
+        raise
 
 def get_data_xlsx(file_name, file_contents=None, on_demand=False):
     '''
