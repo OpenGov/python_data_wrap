@@ -1,9 +1,12 @@
+# Fixes external module pathing
+import externpath
+
 import xlrd
-import xmlparse
 import xlwt
 import re
 import unicodecsv as csv
 import os
+import xmlparse
 from StringIO import StringIO
 
 # Used throughout -- never changed
@@ -42,7 +45,7 @@ def read(file_name, file_contents=None, on_demand=False):
         try:
             return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
         except:
-            raise ValueError("Unable to load file '"+file_name+"' as csv")
+            raise ValueError("Unable to load file '{}' as csv".format(file_name))
 
 def get_data_xlsx(file_name, file_contents=None, on_demand=False):
     '''
@@ -236,12 +239,14 @@ def get_data_excel_xml(file_name, file_contents=None, on_demand=False):
         file_contents: The file-like object holding contents of file_name.
             If left as None, then file_name is directly loaded.
         on_demand: Requests that a yielder be used in place of a full data
-            copy (will be ignored until future features are added).
+            copy (will be ignored).
     '''
+    # NOTE this method is inefficient and uses code that's not of the highest quality
     if file_contents:
-        # TODO make StringIO file-like wrapper
-        pass
-    book = xmlparse.ParseExcelXMLFile(file_name)
+        xml_file = StringIO(file_contents)
+    else:
+        xml_file = file_name
+    book = xmlparse.ParseExcelXMLFile(xml_file)
     row_builder = lambda s, r: list(s.row_values(r))
     return [XMLSheetYielder(book, index, row_builder) for index in xrange(len(book))]
 

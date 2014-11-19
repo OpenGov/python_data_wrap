@@ -90,17 +90,17 @@ class TableLoaderTest(unittest.TestCase):
         self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
         self.assertEqual(data[2].name, '3rd Sheet')
 
-    # def test_on_demand_xml(self, data=None):
-    #     self.test_xml(data, True)
+    def test_on_demand_xml(self, data=None):
+        self.test_xml(data, True)
 
-    # def test_content_xml(self, on_demand=False):
-    #     fname = self.xml_test
-    #     with open(fname, "rb") as dfile:
-    #         name, ext = os.path.splitext(fname)
-    #         self.test_xml(tableloader.read(ext, dfile.read()), on_demand)
+    def test_content_xml(self, on_demand=False):
+        fname = self.xml_test
+        with open(fname, "rb") as dfile:
+            name, ext = os.path.splitext(fname)
+            self.test_xml(tableloader.read(ext, dfile.read()), on_demand)
 
-    # def test_on_demand_content_xml(self):
-    #     self.test_content_xml(True)
+    def test_on_demand_content_xml(self):
+        self.test_content_xml(True)
 
 
     def test_xls(self, data=None, on_demand=False):

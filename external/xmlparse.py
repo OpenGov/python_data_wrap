@@ -51,7 +51,7 @@
 #               11/13/07 GAT: added style support and functions for maxRow and maxColumn
 #               11/14/07 GAT: changed to use excel names for styles
 #               11/15/07 GAT: added stuff to *attempt* to make it work in a *python* way. You can now access a cell with
-#               11/18/14 MSeal: Fixed several naming errors, fixed characters appending instead of replaceming content
+#               11/18/14 MSeal: Fixed several naming errors, fixed characters appending instead of replacing content
 #
 #                       import excelreader;
 #                       xl = excelreader.ParseExcelXMLFile("SomeExcelFile.xml")
