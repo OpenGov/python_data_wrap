@@ -1,12 +1,9 @@
-# Fixes external module pathing
-import externpath
-
 import xlrd
 import xlwt
 import re
 import unicodecsv as csv
 import os
-import xmlparse
+from external import xmlparse
 from StringIO import StringIO
 
 # Used throughout -- never changed

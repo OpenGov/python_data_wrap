@@ -32,11 +32,11 @@ setup(
     long_description=readMD('README.md'),
     install_requires=required,
     license='LGPL 2.1',
-    packages=['datawrap'],
+    packages=['datawrap', 'datawrap.external'],
     test_suite='tests',
     zip_safe=False,
     url='https://github.com/OpenGov/python_data_wrap',
-    download_url='https://github.com/OpenGov/python_data_wrap/tarball/v'+VERSION,
+    download_url='https://github.com/OpenGov/python_data_wrap/tarball/v{}'.format(VERSION),
     keywords=['tables', 'data', 'databases', 'dictionary', 'filedb'],
     classifiers=[
         'Development Status :: 4 - Beta',
