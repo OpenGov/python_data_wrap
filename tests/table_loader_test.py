@@ -22,10 +22,10 @@ def compare_to_csv(file_name, check_table, row_slice=None):
 
         if len(master) != len(check):
             return False
-        for master_line, check_line in zip(master, check):
+        for line_index, (master_line, check_line) in enumerate(zip(master, check)):
             if len(master_line) != len(check_line):
                 return False
-            for master_elem, check_elem in zip(master_line, check_line):
+            for column_index, (master_elem, check_elem) in enumerate(zip(master_line, check_line)):
                 if master_elem != check_elem:
                     try:
                         if isinstance(check_elem, int):
@@ -49,18 +49,23 @@ class TableLoaderTest(unittest.TestCase):
         self.data_dir = os.path.join(dirname(__file__), 'table_load_data')
         self.csv_test = os.path.join(self.data_dir, 'raw', 'csv_test.csv')
         self.csv_master = os.path.join(self.data_dir, 'master', 'csv_master.csv')
-        
+
+        self.xml_test = os.path.join(self.data_dir, 'raw', 'xml_test.xml')
         self.xls_test = os.path.join(self.data_dir, 'raw', 'xls_test.xls')
         self.xlsx_test = os.path.join(self.data_dir, 'raw', 'xlsx_test.xlsx')
-        
+        self.xls_swap_ext_test = os.path.join(self.data_dir, 'raw', 'xls_swap_ext_test.xlsx')
+        self.xlsx_swap_ext_test = os.path.join(self.data_dir, 'raw', 'xlsx_swap_ext_test.xls')
+        self.xml_xls_swap_ext_test = os.path.join(self.data_dir, 'raw', 'xml_swap_test.xls')
+        self.xml_xlsx_swap_ext_test = os.path.join(self.data_dir, 'raw', 'xml_swap_test.xlsx')
+
         self.xls_formula_test = os.path.join(self.data_dir, 'raw', 'formulas_xls.xls')
         self.xlsx_formula_test = os.path.join(self.data_dir, 'raw', 'formulas_xlsx.xlsx')
-        
+
         self.formula_master = os.path.join(self.data_dir, 'master', 'formulas_master.csv')
         self.excel_master1 = os.path.join(self.data_dir, 'master', 'excel_sheet1_master.csv')
         self.excel_master2 = os.path.join(self.data_dir, 'master', 'excel_sheet2_master.csv')
         self.excel_master3 = os.path.join(self.data_dir, 'master', 'excel_sheet3_master.csv')
-    
+
     def test_csv(self, data=None, on_demand=False):
         if data == None:
             data = tableloader.read(self.csv_test, on_demand=on_demand)
@@ -68,7 +73,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_csv(self, data=None):
         self.test_csv(data, True)
-    
+
     def test_content_csv(self, on_demand=False):
         fname = self.csv_test
         with open(fname, "rb") as dfile:
@@ -77,7 +82,71 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_content_csv(self):
         self.test_content_csv(True)
-       
+
+
+
+    def test_xml(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xml_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+        self.assertEqual(data[2].name, '3rd Sheet')
+
+    def test_on_demand_xml(self, data=None):
+        self.test_xml(data, True)
+
+    def test_content_xml(self, on_demand=False):
+        fname = self.xml_test
+        with open(fname, "rb") as dfile:
+            name, ext = os.path.splitext(fname)
+            self.test_xml(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_xml(self):
+        self.test_content_xml(True)
+
+    def test_xml_swap_xls(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xml_xls_swap_ext_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+        self.assertEqual(data[2].name, '3rd Sheet')
+
+    def test_on_demand_xml_swap_xls(self, data=None):
+        self.test_xml_swap_xls(data, True)
+
+    def test_content_xml_swap_xls(self, on_demand=False):
+        fname = self.xml_xls_swap_ext_test
+        with open(fname, "rb") as dfile:
+            name, ext = os.path.splitext(fname)
+            self.test_xml_swap_xls(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_xml_swap_xls(self):
+        self.test_content_xml_swap_xls(True)
+
+    def test_xml_swap_xlsx(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xml_xlsx_swap_ext_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+        self.assertEqual(data[2].name, '3rd Sheet')
+
+    def test_on_demand_xml_swap_xlsx(self, data=None):
+        self.test_xml_swap_xlsx(data, True)
+
+    def test_content_xml_swap_xlsx(self, on_demand=False):
+        fname = self.xml_xlsx_swap_ext_test
+        with open(fname, "rb") as dfile:
+            name, ext = os.path.splitext(fname)
+            self.test_xml_swap_xlsx(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_xml_swap_xlsx(self):
+        self.test_content_xml_swap_xlsx(True)
+
+
+
     def test_xls(self, data=None, on_demand=False):
         if data == None:
             data = tableloader.read(self.xls_test, on_demand=on_demand)
@@ -88,7 +157,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_xls(self, data=None):
         self.test_xls(data, True)
-        
+
     def test_content_xls(self, on_demand=False):
         fname = self.xls_test
         with open(fname, "rb") as dfile:
@@ -97,7 +166,29 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_content_xls(self):
         self.test_content_xls(True)
-        
+
+    def test_xls_swap_ext(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xls_swap_ext_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+        self.assertEqual(data[2].name, '3rd Sheet')
+
+    def test_on_demand_xls_swap_ext(self, data=None):
+        self.test_xls_swap_ext(data, True)
+
+    def test_content_xls_swap_ext(self, on_demand=False):
+        fname = self.xls_swap_ext_test
+        with open(fname, "rb") as dfile:
+            name, ext = os.path.splitext(fname)
+            self.test_xls_swap_ext(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_xls_swap_ext(self):
+        self.test_content_xls_swap_ext(True)
+
+
+
     def test_xlsx(self, data=None, on_demand=False):
         if data == None:
             data = tableloader.read(self.xlsx_test, on_demand=on_demand)
@@ -107,7 +198,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_xlsx(self, data=None):
         self.test_xlsx(data, True)
-        
+
     def test_content_xlsx(self, on_demand=False):
         fname = self.xlsx_test
         with open(fname, "rb") as dfile:
@@ -116,12 +207,35 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_content_xlsx(self):
         self.test_content_xlsx(True)
-        
+
+    def test_xlsx_swap_ext(self, data=None, on_demand=False):
+        if data == None:
+            data = tableloader.read(self.xlsx_swap_ext_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+
+    def test_on_demand_xlsx_swap_ext(self, data=None):
+        self.test_xlsx_swap_ext(data, True)
+
+    def test_content_xlsx_swap_ext(self, on_demand=False):
+        fname = self.xlsx_swap_ext_test
+        with open(fname, "rb") as dfile:
+            name, ext = os.path.splitext(fname)
+            self.test_xlsx_swap_ext(tableloader.read(ext, dfile.read()), on_demand)
+
+    def test_on_demand_content_xlsx_swap_ext(self):
+        self.test_content_xlsx_swap_ext(True)
+
+
+
     def test_sheet_yielder_slicing(self):
         data = tableloader.read(self.xls_test)
         self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(1,None)))
         data = tableloader.read(self.xls_test, on_demand=True)
         self.assertTrue(compare_to_csv(self.excel_master1, data[0], slice(None,3)))
+
+
 
     def test_function_xls(self, data=None, on_demand=False):
         if data == None:
@@ -130,7 +244,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_function_xls(self, data=None):
         self.test_function_xls(data, True)
-        
+
     def test_content_function_xls(self, on_demand=False):
         fname = self.xls_formula_test
         with open(fname, "rb") as dfile:
@@ -139,7 +253,9 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_content_function_xls(self):
         self.test_content_function_xls(True)
-       
+
+
+
     def test_function_xlsx(self, data=None, on_demand=False):
         if data == None:
             data = tableloader.read(self.xlsx_formula_test, on_demand=on_demand)
@@ -147,7 +263,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_on_demand_function_xlsx(self, data=None):
         self.test_function_xlsx(data, True)
-        
+
     def test_content_function_xlsx(self, on_demand=False):
         fname = self.xlsx_formula_test
         with open(fname, "rb") as dfile:
@@ -157,5 +273,5 @@ class TableLoaderTest(unittest.TestCase):
     def test_on_demand_content_function_xlsx(self):
         self.test_content_function_xlsx(True)
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     unittest.main()
