@@ -286,7 +286,7 @@ def get_data_csv(file_name, encoding='utf-8', file_contents=None, on_demand=Fals
         csv_file = StringIO(file_contents)
     else:
         # Don't use 'open as' format, as on_demand loads shouldn't close the file early
-        csv_file = open(file_name, "rb")
+        csv_file = open(file_name, "rU")
     reader = csv.reader(csv_file, dialect=csv.excel, encoding=encoding)
 
     if on_demand:
