@@ -53,6 +53,7 @@ class TableLoaderTest(unittest.TestCase):
         self.xml_test = os.path.join(self.data_dir, 'raw', 'xml_test.xml')
         self.xls_test = os.path.join(self.data_dir, 'raw', 'xls_test.xls')
         self.xlsx_test = os.path.join(self.data_dir, 'raw', 'xlsx_test.xlsx')
+        self.xlsx_caps_test = os.path.join(self.data_dir, 'raw', 'xlsx_test_caps.XLSX')
         self.xls_swap_ext_test = os.path.join(self.data_dir, 'raw', 'xls_swap_ext_test.xlsx')
         self.xlsx_swap_ext_test = os.path.join(self.data_dir, 'raw', 'xlsx_swap_ext_test.xls')
         self.xml_xls_swap_ext_test = os.path.join(self.data_dir, 'raw', 'xml_swap_test.xls')
@@ -192,6 +193,12 @@ class TableLoaderTest(unittest.TestCase):
     def test_xlsx(self, data=None, on_demand=False):
         if data == None:
             data = tableloader.read(self.xlsx_test, on_demand=on_demand)
+        self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
+        self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
+        self.assertTrue(compare_to_csv(self.excel_master3, data[2]))
+
+    def test_xlsx_caps(self, on_demand=False):
+        data = tableloader.read(self.xlsx_caps_test, on_demand=on_demand)
         self.assertTrue(compare_to_csv(self.excel_master1, data[0]))
         self.assertTrue(compare_to_csv(self.excel_master2, data[1]))
         self.assertTrue(compare_to_csv(self.excel_master3, data[2]))

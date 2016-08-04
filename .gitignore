@@ -1,7 +1,7 @@
 *.pyc
 .pydevproject
 .project
-
+venv
 
 *.py[cod]
 

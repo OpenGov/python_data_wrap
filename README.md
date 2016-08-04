@@ -28,7 +28,7 @@ There are also some file loading/saving modules for various formats.
 ### Installation
 From source:
 
-    python settup.py install
+    python setup.py install
 
 From pip:
 
@@ -47,6 +47,8 @@ The implementation files for the repository.
 
 ### tests
 All unit tests for the repo.
+
+`python setup.py test`
 
 ## Language Preferences
 * Google Style Guide
