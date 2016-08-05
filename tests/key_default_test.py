@@ -13,22 +13,22 @@ class KeyDefaultDictTest(unittest.TestCase):
         inputs = { k : k*2 for k in range(100)}
         for k in inputs.keys():
             inputs[str(k)] = str(k*2)
-        
+
         repeatkey = KeyDefaultDict(lambda k: k)
         for k in inputs:
             self.assertEquals(repeatkey[k], k)
-        
+
         # Reset
         repeatkey = KeyDefaultDict(lambda k: k)
         for k,v in inputs.iteritems():
             repeatkey[k] = v
-            
+
         for k in inputs:
             if isinstance(k, basestring):
                 self.assertEquals(repeatkey[k], str(int(k)*2))
             else:
                 self.assertEquals(repeatkey[k], k*2)
-                
+
         for k in range(-200, 0)+range(1000, 2000):
             self.assertEquals(repeatkey[k], k)
 

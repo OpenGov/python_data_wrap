@@ -1,5 +1,5 @@
 import os, shelve
-from basewrap import (
+from .basewrap import (
     MemDict,
     UnorderedCachedDict,
     UnorderedCachedSet,

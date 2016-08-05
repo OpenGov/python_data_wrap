@@ -3,8 +3,8 @@ import xlwt
 import re
 import unicodecsv as csv
 import os
-from external import xmlparse
 from StringIO import StringIO
+from .external import xmlparse
 
 # Used throughout -- never changed
 XML_EXT_REGEX = re.compile(r'(\.xml)\s*$', re.I)

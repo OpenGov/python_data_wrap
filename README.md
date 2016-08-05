@@ -20,7 +20,6 @@ retrieve subsets of data to be treated as complete, contiguous lists.
 There are also some file loading/saving modules for various formats.
 
 ## Dependencies
-* allset
 * xlrd (for excel files in tableloader.py)
 * redis (for RedisDB wrappers)
 
