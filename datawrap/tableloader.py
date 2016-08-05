@@ -7,10 +7,10 @@ from external import xmlparse
 from StringIO import StringIO
 
 # Used throughout -- never changed
-XML_EXT_REGEX = re.compile(r'(\.xml)\s*$')
-XLSX_EXT_REGEX = re.compile(r'(\.xlsx)\s*$')
-XLS_EXT_REGEX = re.compile(r'(\.xls)\s*$')
-CSV_EXT_REGEX = re.compile(r'(\.csv)\s*$')
+XML_EXT_REGEX = re.compile(r'(\.xml)\s*$', re.I)
+XLSX_EXT_REGEX = re.compile(r'(\.xlsx)\s*$', re.I)
+XLS_EXT_REGEX = re.compile(r'(\.xls)\s*$', re.I)
+CSV_EXT_REGEX = re.compile(r'(\.csv)\s*$', re.I)
 
 def read(file_name, file_contents=None, on_demand=False):
     '''
