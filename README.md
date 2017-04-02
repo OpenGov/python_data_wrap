@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/OpenGov/python_data_wrap.svg?branch=master)](https://travis-ci.org/OpenGov/python_data_wrap)
+
 # PyDataWrap
 Python Wrappers on Data Structures and abstractions over persistent
 data stores.
@@ -50,12 +52,13 @@ All unit tests for the repo.
 
 `python setup.py test`
 
-## Language Preferences
+## Style Preferences
 * Google Style Guide
 * Object Oriented (with a few exceptions)
 
 ## TODO
 * Add tests for fileloader and savable
+* Add examples to readme
 
 ## Author
 Author(s): Matthew Seal
