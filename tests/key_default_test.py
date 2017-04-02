@@ -1,7 +1,8 @@
 # This import fixes sys.path issues
-import parentpath
+from . import parentpath
 
 import unittest
+from past.builtins import basestring
 from datawrap.keydefaultdict import KeyDefaultDict
 
 class KeyDefaultDictTest(unittest.TestCase):
@@ -11,26 +12,26 @@ class KeyDefaultDictTest(unittest.TestCase):
     '''
     def test_key_defaults(self):
         inputs = { k : k*2 for k in range(100)}
-        for k in inputs.keys():
+        for k in list(inputs.keys()):
             inputs[str(k)] = str(k*2)
 
         repeatkey = KeyDefaultDict(lambda k: k)
         for k in inputs:
-            self.assertEquals(repeatkey[k], k)
+            self.assertEqual(repeatkey[k], k)
 
         # Reset
         repeatkey = KeyDefaultDict(lambda k: k)
-        for k,v in inputs.iteritems():
+        for k, v in inputs.items():
             repeatkey[k] = v
 
         for k in inputs:
             if isinstance(k, basestring):
-                self.assertEquals(repeatkey[k], str(int(k)*2))
+                self.assertEqual(repeatkey[k], str(int(k)*2))
             else:
-                self.assertEquals(repeatkey[k], k*2)
+                self.assertEqual(repeatkey[k], k*2)
 
-        for k in range(-200, 0)+range(1000, 2000):
-            self.assertEquals(repeatkey[k], k)
+        for k in list(range(-200, 0)) + list(range(1000, 2000)):
+            self.assertEqual(repeatkey[k], k)
 
 if __name__ == "__main__":
     unittest.main()

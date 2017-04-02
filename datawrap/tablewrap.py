@@ -1,6 +1,10 @@
-import sys
 import collections
 from .listwrap import ListIter, MutableListSubset
+try:
+    from sys import maxint
+    maxsize = maxint
+except ImportError:
+    from sys import maxsize
 
 def squarify_table(table):
     '''
@@ -8,7 +12,7 @@ def squarify_table(table):
     rows with 'None' objects up to the length of the largest row.
     '''
     max_length = 0
-    min_length = sys.maxint
+    min_length = maxsize
     for row in table:
         row_len = len(row)
         if row_len > max_length:

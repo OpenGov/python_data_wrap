@@ -1,5 +1,5 @@
 # This import fixes sys.path issues
-import parentpath
+from . import parentpath
 
 from datawrap import tableloader
 import csv
@@ -77,14 +77,12 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_csv(self, on_demand=False):
         fname = self.csv_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_csv(tableloader.read(ext, dfile.read()), on_demand)
 
     def test_on_demand_content_csv(self):
         self.test_content_csv(True)
-
-
 
     def test_xml(self, data=None, on_demand=False):
         if data == None:
@@ -99,7 +97,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_xml(self, on_demand=False):
         fname = self.xml_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_xml(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -119,7 +117,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_xml_swap_xls(self, on_demand=False):
         fname = self.xml_xls_swap_ext_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_xml_swap_xls(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -139,7 +137,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_xml_swap_xlsx(self, on_demand=False):
         fname = self.xml_xlsx_swap_ext_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_xml_swap_xlsx(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -161,7 +159,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_xls(self, on_demand=False):
         fname = self.xls_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_xls(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -181,7 +179,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_xls_swap_ext(self, on_demand=False):
         fname = self.xls_swap_ext_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_xls_swap_ext(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -208,7 +206,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_xlsx(self, on_demand=False):
         fname = self.xlsx_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_xlsx(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -227,7 +225,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_xlsx_swap_ext(self, on_demand=False):
         fname = self.xlsx_swap_ext_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_xlsx_swap_ext(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -254,7 +252,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_function_xls(self, on_demand=False):
         fname = self.xls_formula_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_function_xls(tableloader.read(ext, dfile.read()), on_demand)
 
@@ -273,7 +271,7 @@ class TableLoaderTest(unittest.TestCase):
 
     def test_content_function_xlsx(self, on_demand=False):
         fname = self.xlsx_formula_test
-        with open(fname, "rb") as dfile:
+        with open(fname, 'rb') as dfile:
             name, ext = os.path.splitext(fname)
             self.test_function_xlsx(tableloader.read(ext, dfile.read()), on_demand)
 

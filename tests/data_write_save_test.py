@@ -1,10 +1,11 @@
 # This import fixes sys.path issues
-import parentpath
+from . import parentpath
 
 import unittest
 import os
 import copy
 import shutil
+from builtins import str as text
 from os.path import dirname
 from datawrap import tableloader
 
@@ -36,12 +37,19 @@ class DataLoadTest(unittest.TestCase):
                     worksheet[row_index][col_index] = None
         return worksheet
 
+    def is_numeric(self, elem):
+        try:
+            float(elem)
+            return True
+        except (TypeError, ValueError):
+            return False
+
     def numerics_to_string(self, worksheet):
         worksheet = copy.deepcopy(worksheet)
         for row_index, row in enumerate(worksheet):
             for col_index, elem in enumerate(row):
-                if isinstance(elem, (int, float, long)):
-                    worksheet[row_index][col_index] = unicode(elem)
+                if self.is_numeric(elem):
+                    worksheet[row_index][col_index] = text(elem)
         return worksheet
 
     def chop_extra_nones(self, worksheet):

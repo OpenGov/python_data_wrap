@@ -1,5 +1,5 @@
 # This import fixes sys.path issues
-import parentpath
+from . import parentpath
 
 from datawrap import tablewrap
 import unittest
@@ -21,7 +21,7 @@ class TableWrapTest(unittest.TestCase):
         self.assertEqual(self.transpose[4][2], self.table[2][4])
         self.assertEqual(self.transpose[-1][-1], self.table[-1][-1])
         self.assertEqual(self.transpose[-2][-3], self.table[-3][-2])
-        
+
         for c,col in enumerate(self.transpose):
             for r,elem in enumerate(col):
                 self.assertEqual(elem, self.table[r][c])
@@ -105,5 +105,5 @@ class TableWrapTest(unittest.TestCase):
         self.assertIsNone(transpose[2][1])
         self.assertIsNone(bad_table[1][2])
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     unittest.main()

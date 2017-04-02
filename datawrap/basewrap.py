@@ -5,23 +5,23 @@ class UnorderedCachedDict(collections.MutableMapping):
     An unordered block cache with full reject upon overflow. Since
     LRU style caches require much more overhead in software over
     hardware, this naive block rejection is one of the fastest solutions.
-    
+
     The Cache is constructed with a database object behind it so that
     missed requests fall through to the full database. Thus this object
     wraps the full database as a cached database.
-    
-    The database must implement __getitem__, __setitem__, __iter__, 
+
+    The database must implement __getitem__, __setitem__, __iter__,
     __len__, __contains__, __delitem__ and (optional) close.
-    
+
     Cache Size is defined as number of elements, not size of elements,
-    so caches with many large elements might take more memory than 
+    so caches with many large elements might take more memory than
     expected.
-    
+
     NOTE: Pushing None values into the dictionary will cause an exception
     and getting an item with None value is considered to be an entry for
     no item present.
     '''
-    def __init__(self, database, cache_size, read_only=False, 
+    def __init__(self, database, cache_size, read_only=False,
                  immutable_vals=False, stringify_keys=False,
                  cache_misses=True, database_default_func=None,
                  read_pool_size=0, value_converter=None, **kwargs):
@@ -85,7 +85,7 @@ class UnorderedCachedDict(collections.MutableMapping):
     def get_cache(self):
         '''
         Gets the cache as a stand-alone object -- updates
-        directly to this cache will not be reflected/registered 
+        directly to this cache will not be reflected/registered
         with the core database.
         '''
         return self._cache
@@ -112,7 +112,7 @@ class UnorderedCachedDict(collections.MutableMapping):
             if val != None or self._cache_misses:
                 self._insert_cache(key, val, True)
                 self._check_cache_size()
-        if val == None: 
+        if val == None:
             if self._database_default_func:
                 val = self._database_default_func()
             else:
@@ -186,7 +186,7 @@ class UnorderedCachedDict(collections.MutableMapping):
     def __delitem__(self, key):
         '''
         Deletes from both the cache, write queues and the database
-        ''' 
+        '''
         if self.read_only:
             raise AttributeError("Attempted to delete in read_only mode")
         if key != None and self.stringify_keys:
@@ -250,11 +250,11 @@ class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
     database as a dictionary, but treated as a set on the external
     interface.
     '''
-    def __init__(self, database, cache_size, read_only=False, cache_misses=True, 
+    def __init__(self, database, cache_size, read_only=False, cache_misses=True,
                  immutable_vals=False, stringify_keys=False, read_pool_size=0, **kwargs):
-        UnorderedCachedDict.__init__(self, database, cache_size=cache_size, 
-                                     cache_misses=cache_misses, read_only=read_only, 
-                                     immutable_vals=immutable_vals, read_pool_size=read_pool_size, 
+        UnorderedCachedDict.__init__(self, database, cache_size=cache_size,
+                                     cache_misses=cache_misses, read_only=read_only,
+                                     immutable_vals=immutable_vals, read_pool_size=read_pool_size,
                                      stringify_keys=stringify_keys, **kwargs)
 
     def _dict_set(self, key, val):
@@ -286,8 +286,8 @@ class UnorderedCachedSet(collections.MutableSet, UnorderedCachedDict):
 
     def update(self, *args, **kwargs):
         '''
-        Updates the set to include all arguments passed in. If the keyword 
-        argument preprocess is passed, then each element is preprocessed 
+        Updates the set to include all arguments passed in. If the keyword
+        argument preprocess is passed, then each element is preprocessed
         before being added.
         '''
         preprocess = kwargs.get('preprocess')
@@ -303,7 +303,7 @@ class MemDict(collections.MutableMapping):
     standardized among several databases
     '''
     # Careful with changing __init__ params and forgetting them in _reinit
-    def __init__(self, db_name, read_only=False, database_default_func=None, 
+    def __init__(self, db_name, read_only=False, database_default_func=None,
                  stringify_keys=False, **kwargs):
         self._db_name = db_name
         self.read_only = read_only
@@ -349,7 +349,7 @@ class MemDict(collections.MutableMapping):
             key = str(key)
         try:
             return self._database.__getitem__(key)
-        except KeyError: 
+        except KeyError:
             if self._database_default_func != None:
                 return self._database_default_func()
             else:
@@ -414,18 +414,18 @@ class SplitDbDict(collections.MutableMapping):
     '''
     Defines a way to split data among any number of arbitrary databases.
     All arguments in kwargs are applied to each database constructor.
-    
+
     The default database class is base_db_class, while key specific classes
     can be defined in keyed_classes as a dictionary input. These overwrite
     the default db_class.
-    
+
     If the split_func gives an invalid key name, a KeyError will be raised,
     so make sure updates to split_keys also updates split_func.
-    
+
     If a cache_size if passed through kwargs, it is evenly divided among all
     databases.
     '''
-    def __init__(self, db_name, base_db_class, split_keys, split_func, 
+    def __init__(self, db_name, base_db_class, split_keys, split_func,
                  keyed_classes=None, stringify_keys=False, **kwargs):
         self.stringify_keys = stringify_keys
         self.split_keys = split_keys
@@ -499,7 +499,7 @@ class SplitDbDict(collections.MutableMapping):
             def __iter__(self):
                 return self
 
-            def next(self):
+            def __next__(self):
                 if self.cur_iter == None:
                     # If we're out of iterables, then StopIteration
                     try:
@@ -507,11 +507,11 @@ class SplitDbDict(collections.MutableMapping):
                     except IndexError:
                         raise StopIteration()
                 try:
-                    return self.cur_iter.next()
+                    return next(self.cur_iter)
                 except StopIteration:
                     # Clear out the iterator and call next
                     self.cur_iter = None
-                    return self.next()
+                    return next(self)
 
         return MultiIter(self._keyed_db.values())
 
@@ -559,18 +559,18 @@ class SplitDbSet(collections.MutableSet, SplitDbDict):
     '''
     Defines a way to split data among any number of arbitrary databases.
     All arguments in kwargs are applied to each database constructor.
-    
+
     The default database class is base_db_class, while key specific classes
     can be defined in keyed_classes as a dictionary input. These overwrite
     the default db_class.
-    
+
     If the split_func gives an invalid key name, a KeyError will be raised,
     so make sure updates to split_keys also updates split_func.
-    
+
     If a cache_size if passed through kwargs, it is evenly divided among all
     databases.
     '''
-    def __init__(self, db_name, base_db_class, split_keys, split_func, 
+    def __init__(self, db_name, base_db_class, split_keys, split_func,
                  keyed_classes=None, stringify_keys=False, **kwargs):
         self.stringify_keys = stringify_keys
         self.split_keys = split_keys

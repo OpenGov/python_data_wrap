@@ -5,20 +5,22 @@ changes could disrupt these.
 '''
 
 # This import fixes sys.path issues
-import parentpath
+from . import parentpath
 
 from datawrap import filedbwrap
 import unittest
 import os
 import string
+import shutil
 from os.path import dirname
+from builtins import str as text
 
 class FakeObj():
     '''
     Used to track work on a non primitive with no methods
     defined.
     '''
-    def __init__(self,value):
+    def __init__(self, value):
         self.value = int(value)
 
 def first_alpha_char(word):
@@ -43,14 +45,14 @@ class DBWrapTest(object):
         self.test_dict = self.create_dictionary()
 
         self.size = 20
-        #self.test_dict =  self.fileDict
         for i in range(self.size):
-                self.test_dict[str(i)] = int(i)
+            self.test_dict[text(i)] = int(i)
         if self.clear_cache():
             self.test_dict.reopen(cache_size=0)
 
     def tearDown(self):
         self.test_dict.close()
+        shutil.rmtree(self.data_dir)
 
     def test_default_func(self):
         self.assertEqual(self.test_dict['50'], None)
@@ -68,7 +70,7 @@ class DBWrapTest(object):
         # Do we contain all the values we entered?
         result = 0;
         for i in range(20):
-            if str(i) in self.test_dict:
+            if text(i) in self.test_dict:
                 result += 1
         self.assertEqual(result,self.size)
         self.test_dict._sync_writes()
@@ -77,7 +79,7 @@ class DBWrapTest(object):
         # Check the values?
         result = 0
         for i in range(20):
-            if self.test_dict[str(i)] == i:
+            if self.test_dict[text(i)] == i:
                 result += 1
         self.assertEqual(result,self.size)
         self.test_dict._sync_writes()
@@ -88,13 +90,13 @@ class DBWrapTest(object):
         # Double even values
         for i in range(20):
             if i%2 == 0:
-                self.test_dict[str(i)] += self.test_dict[str(i)]
+                self.test_dict[text(i)] += self.test_dict[text(i)]
         for i in range(20):
             if i%2 == 0:
-                if self.test_dict[str(i)] == 2*i:
+                if self.test_dict[text(i)] == 2*i:
                     result += 1
             else:
-                if self.test_dict[str(i)] == i:
+                if self.test_dict[text(i)] == i:
                     result += 1
         # Checking new values
         self.assertEqual(result,self.size)
@@ -102,7 +104,7 @@ class DBWrapTest(object):
         # Undo
         for i in range(20):
             if i%2 == 0:
-                self.test_dict[str(i)] -= i
+                self.test_dict[text(i)] -= i
         self.test_check_values()
         self.test_dict._sync_writes()
 
@@ -146,18 +148,20 @@ class DBWrapTest(object):
         self.test_dict._sync_writes()
         result = 0
         for i in range(20):
-            if self.test_dict[str(i)] == i:
+            if self.test_dict[text(i)] == i:
                 result += 1
-        self.assertEqual(result,self.size)
+        self.assertEqual(result, self.size)
+
         # Edit values, flush then check
         for i in range(20):
-                self.test_dict[str(i)] *= 2
+            self.test_dict[text(i)] *= 2
         self.test_dict._sync_writes()
+
         result = 0
         for i in range(20):
-            if(self.test_dict[str(i)] ==  i*2):
+            if self.test_dict[text(i)] == i*2:
                 result += 1
-        self.assertEqual(len(self.test_dict),result)
+        self.assertEqual(len(self.test_dict), result)
         self.test_dict._sync_writes()
 
     def test_write_to_read_only(self):
@@ -212,7 +216,7 @@ class MemFromFileTestCacheZero(DBWrapTest, unittest.TestCase):
     Tests MemFromFileDict with 0 size cache.
     '''
     def create_dictionary(self):
-        return filedbwrap.MemFromFileDict(os.path.join(self.data_dir, '01'),
+        return filedbwrap.MemFromFileDict(os.path.join(self.data_dir, '04'),
                                           read_only=False,
                                           clear=True,
                                           stringify_keys=True,
@@ -226,7 +230,7 @@ class FileTestCacheZero(DBWrapTest, unittest.TestCase):
     Tests FileDict with 0 size cache.
     '''
     def create_dictionary(self):
-        return filedbwrap.FileDict(os.path.join(self.data_dir, '02'),
+        return filedbwrap.FileDict(os.path.join(self.data_dir, '05'),
                                    read_only=False,
                                    clear=True,
                                    stringify_keys=True,
@@ -240,7 +244,7 @@ class SplitFileTestCacheZero(DBWrapTest, unittest.TestCase):
     Tests SplitFileDict with 0 size cache.
     '''
     def create_dictionary(self):
-        return filedbwrap.SplitFileDict(os.path.join(self.data_dir, '03'),
+        return filedbwrap.SplitFileDict(os.path.join(self.data_dir, '06'),
                                   split_keys=tuple(string.ascii_lowercase),
                                   split_func = first_alpha_char,
                                   read_only=False,

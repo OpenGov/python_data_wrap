@@ -93,20 +93,24 @@
 #
 #
 # Downloaded from: https://code.google.com/p/script-automatic/source/browse/trunk/+script-automatic+--username+m.wawrzyniuk%40gmail.com/NotUsed/excelreader.py?r=69
-#
+# Edited by Matthew Seal for Python 3 support
 
+from __future__ import print_function
 import sys,re
 from xml.sax.handler import ContentHandler
 from xml.sax import parse
 from optparse import OptionParser
-from UserDict import UserDict
+try:
+        from UserDict import UserDict
+except ImportError:
+        from collections import UserDict
 
 __specRe = re.compile("^([A-Z]+)(\d+)$", re.IGNORECASE)
 
 def merge (dst, src):
         """put key/value pairs that exist in src but not in dst into dst"""
         for key in src.keys():
-                if not dst.has_key(key):
+                if key not in dst:
                         dst[key] = src[key]
 
 def IndexToColumn (ndx):
@@ -114,7 +118,7 @@ def IndexToColumn (ndx):
         ndx -= 1
         col  = chr(ndx % 26 + 65)
         while (ndx > 25):
-                ndx  = ndx / 26
+                ndx  = ndx // 26
                 col  = chr(ndx % 26 + 64) + col
         return col
 
@@ -139,7 +143,7 @@ class Row(UserDict):
                 self.finalized = False
 
         def __len__ (self):
-                raise  AssertionError, "Do not use len() on a Row. Use worksheet.GetMaxColumn() or row.keys()"
+                raise  AssertionError("Do not use len() on a Row. Use worksheet.GetMaxColumn() or row.keys()")
 
         def __getitem__ (self,key):
                 if self.finalized:
@@ -148,13 +152,13 @@ class Row(UserDict):
                         if key > 0 and key <= self.worksheet.GetMaxColumn():
                                 return self.GetCellValue(key)
                         else:
-                                raise KeyError, key
+                                raise KeyError(key)
                 else:
                         return UserDict.__getitem__(self,key)
 
         def keys (self):
                 if self.finalized:
-                        return range(1, self.worksheet.GetMaxColumn() + 1)
+                        return list(range(1, self.worksheet.GetMaxColumn() + 1))
                 else:
                         return UserDict.keys(self)
 
@@ -173,8 +177,8 @@ class Row(UserDict):
                 """
                 if isinstance(column, str):
                         column = ColumnToIndex(column)
-                if self.has_key(column):
-                        if UserDict.__getitem__(self, column).has_key("content"):
+                if column in self:
+                        if "content" in UserDict.__getitem__(self, column):
                                 return UserDict.__getitem__(self, column)["content"]
                 return default
 
@@ -184,7 +188,7 @@ class Row(UserDict):
                 """
                 cell = GetCellValue(self, column)
                 if cell == None:
-                        raise ValueError, "cell %d does not exist" % (column,)
+                        raise ValueError("cell %d does not exist" % (column,))
                 return cell
 
         def GetCellStyle (self, column):
@@ -205,8 +209,8 @@ class Row(UserDict):
                         column = ColumnToIndex(column)
                 style = { }
                 # get style for cell
-                if self.has_key(column):
-                        if UserDict.__getitem__(self, column).has_key("style"):
+                if column in self:
+                        if "style" in UserDict.__getitem__(self, column):
                                 merge(style, UserDict.__getitem__(self, column)["style"])
                 return style
 
@@ -222,7 +226,7 @@ class Worksheet (UserDict):
                 self.finalized      = False
 
         def __len__ (self):
-                raise  AssertionError, "Do not use len() on a worksheet. Use worksheet.GetMaxRow() or worksheet.keys()"
+                raise  AssertionError("Do not use len() on a worksheet. Use worksheet.GetMaxRow() or worksheet.keys()")
 
         def __getitem__ (self, key):
                 if self.finalized:
@@ -233,12 +237,12 @@ class Worksheet (UserDict):
                         if key > 0 and key <= self.maxRow:
                                 return UserDict.__getitem__(self,key)
                         else:
-                                raise KeyError, key
+                                raise KeyError(key)
                 else:
                         return UserDict.__getitem__(self,key)
 
         def keys (self):
-                return range(1, self.maxRow + 1)
+                return list(range(1, self.maxRow + 1))
 
         def friend_Finalize (self):
                 self.finalized = True
@@ -287,7 +291,7 @@ class Worksheet (UserDict):
                 """
                 if row == None:
                         (row, column) = ParseCellSpec(column)
-                if self.has_key(row):
+                if row in self:
                         return self[row].GetCellValue(column, default)
                 return default
 
@@ -299,7 +303,7 @@ class Worksheet (UserDict):
                         (row, column) = ParseCellSpec(column)
                 cell = GetCellValue(self, column, row)
                 if cell == None:
-                        raise ValueError, "cell %d:%d does not exist" % (column, row)
+                        raise ValueError("cell %d:%d does not exist" % (column, row))
                 return cell
 
         def GetCellStyle (self, column, row = None):
@@ -320,15 +324,15 @@ class Worksheet (UserDict):
                         (row, column) = ParseCellSpec(column)
                 style = { }
                 # get style for cell
-                if self.has_key(row):
+                if row in self:
                         merge(style, self[row].GetCellStyle(column))
                 # merge with row style
-                if self.rowStyles.has_key(row):
+                if row in self.rowStyles:
                         merge(style, self.rowStyles[row])
                 # merge with column style
                 if isinstance(column, str):
                         column = ColumnToIndex(column)
-                if self.columnStyles.has_key(column):
+                if column in self.columnStyles:
                         merge(style, self.columnStyles[column])
                 # merge with default style
                 merge(style, self.defaultStyle)
@@ -368,7 +372,7 @@ class ExcelFile:
         def values(self):
                 return self.worksheetsByName.values()
 
-        def items (self):
+        def items(self):
                 return self.worksheetsByName.items()
 
         def __getitem__ (self, key):
@@ -435,7 +439,7 @@ class ExcelToSparseArrayHandler(ContentHandler):
                 self.currentColumnNum = int(attrs.get("ss:Index", str(self.currentColumnNum + 1)))
                 span = int(attrs.get("ss:Span", "1"))
                 for col in range(0, span):
-                        if attrs.has_key("ss:StyleID"):
+                        if "ss:StyleID" in attrs:
                                 self.currentWorksheet.friend_addColumnStyle(self.currentColumnNum + col, self.excelfile.GetStyle(attrs["ss:StyleID"]))
                 self.currentColumnNum += span - 1
 
@@ -458,7 +462,7 @@ class ExcelToSparseArrayHandler(ContentHandler):
                 self.currentRowStyle = None
                 self.currentRowSpan  = int(attrs.get("ss:Span", "1"))
                 for row in range(0, self.currentRowSpan):
-                        if attrs.has_key("ss:StyleID"):
+                        if "ss:StyleID" in attrs:
                                 self.currentWorksheet.friend_addRowStyle(self.currentRowNum + row, self.excelfile.GetStyle(attrs["ss:StyleID"]))
 
         def end_Row (self):
@@ -471,7 +475,7 @@ class ExcelToSparseArrayHandler(ContentHandler):
                 self.currentColumnNum = int(attrs.get("ss:Index", str(self.currentColumnNum + 1)))
                 self.mergeAcross = attrs.get("ss:MergeAcross", None)
                 self.currentRow[self.currentColumnNum] = { }
-                if attrs.has_key("ss:StyleID"):
+                if "ss:StyleID" in attrs:
                         self.currentRow[self.currentColumnNum]["style"] = self.excelfile.GetStyle(attrs["ss:StyleID"])
 
         def start_Data (self, attrs):
@@ -562,42 +566,42 @@ if __name__=="__main__":
         xl = ParseExcelXMLFile(xlXMLFileName)
 
         # example: dump it all
-        print "-----------------"
+        print("-----------------")
         for worksheet in xl.GetWorksheets():
-                print "worksheet : %s" % (worksheet.GetName(), )
-                print "maxRow    : %d" % (worksheet.GetMaxRow(), )
-                print "maxColumn : %d" % (worksheet.GetMaxColumn(), )
+                print("worksheet : %s" % (worksheet.GetName(), ))
+                print("maxRow    : %d" % (worksheet.GetMaxRow(), ))
+                print("maxColumn : %d" % (worksheet.GetMaxColumn(), ))
                 for row in range(1, worksheet.GetMaxRow() + 1):
                         for column in range(1, worksheet.GetMaxColumn() + 1):
-                                print "%c:%d (%s)  " % (64 + column, row, worksheet.GetCellValue(column, row, "*undef*")),
-                        print ""
+                                print("%c:%d (%s)  " % (64 + column, row, worksheet.GetCellValue(column, row, "*undef*")), end=' ')
+                        print("")
 
         # example: dump it all python style
-        print "-----------------"
+        print("-----------------")
         for worksheet in xl:
-                print "worksheet : %s" % (worksheet.GetName(), )
-                print "maxRow    : %d" % (worksheet.GetMaxRow(), )
-                print "maxColumn : %d" % (worksheet.GetMaxColumn(), )
+                print("worksheet : %s" % (worksheet.GetName(), ))
+                print("maxRow    : %d" % (worksheet.GetMaxRow(), ))
+                print("maxColumn : %d" % (worksheet.GetMaxColumn(), ))
                 for row in worksheet.keys():
                         for column in worksheet[row].keys():
                                 cellValue = worksheet[row][column]
                                 if cellValue == None:
                                         cellValue = "*undef"
-                                print "%c:%d (%s)  " % (64 + column, row, cellValue),
-                        print ""
+                                print("%c:%d (%s)  " % (64 + column, row, cellValue), end=' ')
+                        print("")
 
         # dump styles
-        print "-----------------"
+        print("-----------------")
         for worksheet in xl.GetWorksheets():
-                print "worksheet : %s" % (worksheet.GetName(), )
-                print "maxRow    : %d" % (worksheet.GetMaxRow(), )
-                print "maxColumn : %d" % (worksheet.GetMaxColumn(), )
+                print("worksheet : %s" % (worksheet.GetName(), ))
+                print("maxRow    : %d" % (worksheet.GetMaxRow(), ))
+                print("maxColumn : %d" % (worksheet.GetMaxColumn(), ))
                 for row in range(1, worksheet.GetMaxRow() + 1):
                         for column in range(1, worksheet.GetMaxColumn() + 1):
                                 style = worksheet.GetCellStyle(column, row)
-                                print "%c:%d (%s)  " % (64 + column, row, style),
-                        print ""
-        print "-----------------"
+                                print("%c:%d (%s)  " % (64 + column, row, style), end=' ')
+                        print("")
+        print("-----------------")
 
         # example: make csv using first worksheet
         worksheet = xl.GetWorksheet(0)

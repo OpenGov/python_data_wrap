@@ -1,4 +1,5 @@
 import collections
+from past.builtins import basestring
 
 from redis import StrictRedis
 
@@ -29,7 +30,7 @@ class RedisCacheDict(StrictRedis, collections.MutableMapping):
     2-tuple key.  As an example, the following sets the value `lorem` at key
     `bar` in the Redis hash existing at `foo` in Redis database `12`:
 
-    
+
     ```
     redis_wrapper = RedisCacheDict(db=12)
     redis_wrapper[('foo', 'bar')] = 'lorem'

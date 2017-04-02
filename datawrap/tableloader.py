@@ -3,7 +3,8 @@ import xlwt
 import re
 import unicodecsv as csv
 import os
-from StringIO import StringIO
+from io import BytesIO
+from builtins import range
 from .external import xmlparse
 
 # Used throughout -- never changed
@@ -44,7 +45,7 @@ def read(file_name, file_contents=None, on_demand=False):
                 return get_data_csv(file_name, file_contents=file_contents, on_demand=on_demand)
             except:
                 raise ValueError("Unable to load file '{}' as csv".format(file_name))
-    except xlrd.XLRDError, e:
+    except xlrd.XLRDError as e:
         if "<?xml" in str(e):
             return get_data_excel_xml(file_name, file_contents=file_contents, on_demand=on_demand)
         raise
@@ -89,7 +90,7 @@ class SheetYielder(object):
             return self.rows
 
         self._instantiate_sheet()
-        self.rows = [self._build_row(row) for row in xrange(self.sheet.nrows)]
+        self.rows = [self._build_row(row) for row in range(self.sheet.nrows)]
         return self.rows
 
     def __iter__(self):
@@ -99,7 +100,7 @@ class SheetYielder(object):
             return
 
         self._instantiate_sheet()
-        for i in xrange(self.sheet.nrows):
+        for i in range(self.sheet.nrows):
             yield self[i]
 
     def __len__(self):
@@ -168,8 +169,8 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
         '''
         (y,m,d, hh,mm,ss) = tuple_date
         non_zero = lambda n: n!=0
-        date = "%04d-%02d-%02d"  % (y,m,d)    if filter(non_zero, (y,m,d))                else ''
-        time = "T%02d:%02d:%02d" % (hh,mm,ss) if filter(non_zero, (hh,mm,ss)) or not date else ''
+        date = "%04d-%02d-%02d"  % (y,m,d)    if list(filter(non_zero, (y,m,d)))               else ''
+        time = "T%02d:%02d:%02d" % (hh,mm,ss) if list(filter(non_zero, (hh,mm,ss))) or not date else ''
         return date+time
 
     def format_excel_val(book, val_type, value, want_tuple_date):
@@ -196,10 +197,10 @@ def get_data_xls(file_name, file_contents=None, on_demand=False):
             A list of 2-D tables holding the converted cells of each sheet
         '''
         book = xlrd.open_workbook(file_name, file_contents=file_contents, on_demand=on_demand)
-        formatter = lambda (t, v): format_excel_val(book, t, v, False)
-        row_builder = lambda s, r: map(formatter, zip(s.row_types(r), s.row_values(r)))
+        formatter = lambda t_v: format_excel_val(book, t_v[0], t_v[1], False)
+        row_builder = lambda s, r: list(map(formatter, zip(s.row_types(r), s.row_values(r))))
 
-        data = [SheetYielder(book, index, row_builder) for index in xrange(book.nsheets)]
+        data = [SheetYielder(book, index, row_builder) for index in range(book.nsheets)]
         if not on_demand:
             for sheet in data:
                 sheet.load()
@@ -249,12 +250,12 @@ def get_data_excel_xml(file_name, file_contents=None, on_demand=False):
     '''
     # NOTE this method is inefficient and uses code that's not of the highest quality
     if file_contents:
-        xml_file = StringIO(file_contents)
+        xml_file = BytesIO(file_contents)
     else:
         xml_file = file_name
     book = xmlparse.ParseExcelXMLFile(xml_file)
     row_builder = lambda s, r: list(s.row_values(r))
-    return [XMLSheetYielder(book, index, row_builder) for index in xrange(len(book))]
+    return [XMLSheetYielder(book, index, row_builder) for index in range(len(book))]
 
 def get_data_csv(file_name, encoding='utf-8', file_contents=None, on_demand=False):
     '''
@@ -283,10 +284,10 @@ def get_data_csv(file_name, encoding='utf-8', file_contents=None, on_demand=Fals
         return [line for line in yield_csv(csv_contents, csv_file)]
 
     if file_contents:
-        csv_file = StringIO(file_contents)
+        csv_file = BytesIO(file_contents)
     else:
         # Don't use 'open as' format, as on_demand loads shouldn't close the file early
-        csv_file = open(file_name, "rU")
+        csv_file = open(file_name, 'rb')
     reader = csv.reader(csv_file, dialect=csv.excel, encoding=encoding)
 
     if on_demand:
@@ -372,7 +373,7 @@ def write_csv(data, file_name, encoding='utf-8'):
 
     for i, sheet in enumerate(data):
         fname = file_name if not name_extension else root+"_"+str(i)+ext
-        with open(fname, "wb") as date_file:
+        with open(fname, 'wb') as date_file:
             csv_file = csv.writer(date_file, encoding=encoding)
             for line in sheet:
                 csv_file.writerow(line)
