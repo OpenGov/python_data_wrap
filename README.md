@@ -22,6 +22,7 @@ There are also some file loading/saving modules for various formats.
 ## Dependencies
 * xlrd (for excel files in tableloader.py)
 * redis (for RedisDB wrappers)
+* unicodecsv (for consistent unicode data loading)
 
 ## Setup
 ### Installation
